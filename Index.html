@@ -1,0 +1,1309 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Inverfin – Dashboard Comparativo Telecobranzas</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --navy: #0a1628;
+    --blue: #1a3a6e;
+    --mid: #1e4d99;
+    --accent: #2563eb;
+    --bright: #3b82f6;
+    --sky: #60a5fa;
+    --ice: #bfdbfe;
+    --gold: #f59e0b;
+    --gold2: #fbbf24;
+    --green: #10b981;
+    --red: #ef4444;
+    --surface: #0f1f3d;
+    --card: #132040;
+    --border: rgba(59,130,246,0.18);
+    --text: #e2e8f0;
+    --muted: #94a3b8;
+    --white: #ffffff;
+    --shadow: 0 8px 40px rgba(0,0,0,0.45);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--navy);
+    font-family: 'DM Sans', sans-serif;
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ─── HEADER ─── */
+  .header {
+    background: linear-gradient(135deg, var(--navy) 0%, var(--blue) 60%, #1e3a8a 100%);
+    border-bottom: 2px solid var(--accent);
+    padding: 0 2rem;
+    position: sticky; top: 0; z-index: 100;
+    box-shadow: 0 4px 30px rgba(0,0,0,0.5);
+  }
+  .header-inner {
+    max-width: 1600px; margin: 0 auto;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 1rem 0;
+    gap: 1.5rem;
+  }
+  .brand { display: flex; align-items: center; gap: 1rem; }
+  .brand-logo {
+    width: 48px; height: 48px;
+    background: linear-gradient(135deg, var(--accent), var(--sky));
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.6rem; color: white;
+    box-shadow: 0 4px 16px rgba(37,99,235,0.5);
+    flex-shrink: 0;
+  }
+  .brand-text h1 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 2rem; letter-spacing: 3px;
+    color: var(--white);
+    line-height: 1;
+  }
+  .brand-text p { font-size: 0.72rem; color: var(--sky); letter-spacing: 2px; text-transform: uppercase; }
+
+  .header-kpi {
+    display: flex; gap: 1.5rem; flex-wrap: wrap;
+  }
+  .kpi-chip {
+    background: rgba(37,99,235,0.12);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 0.5rem 1rem;
+    text-align: center;
+    min-width: 110px;
+  }
+  .kpi-chip .kv { font-size: 1.2rem; font-weight: 700; color: var(--gold2); line-height: 1; }
+  .kpi-chip .kl { font-size: 0.65rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-top: 2px; }
+
+  .header-actions { display: flex; gap: 0.75rem; align-items: center; }
+  .btn {
+    display: inline-flex; align-items: center; gap: 0.4rem;
+    padding: 0.55rem 1.1rem; border-radius: 8px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.78rem; font-weight: 600;
+    cursor: pointer; border: none; transition: all .2s;
+    white-space: nowrap;
+  }
+  .btn-primary { background: var(--accent); color: white; }
+  .btn-primary:hover { background: #1d4ed8; transform: translateY(-1px); box-shadow: 0 4px 14px rgba(37,99,235,0.4); }
+  .btn-secondary { background: rgba(255,255,255,0.07); color: var(--text); border: 1px solid var(--border); }
+  .btn-secondary:hover { background: rgba(255,255,255,0.12); }
+  .btn-gold { background: var(--gold); color: var(--navy); }
+  .btn-gold:hover { background: var(--gold2); transform: translateY(-1px); }
+  #fileInput { display: none; }
+
+  /* ─── TABS ─── */
+  .tabs-bar {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 0 2rem;
+    display: flex; overflow-x: auto;
+    gap: 0; scrollbar-width: none;
+  }
+  .tabs-bar::-webkit-scrollbar { display: none; }
+  .tab {
+    padding: 0.85rem 1.5rem;
+    font-size: 0.8rem; font-weight: 600;
+    color: var(--muted);
+    cursor: pointer;
+    border-bottom: 3px solid transparent;
+    transition: all .2s;
+    white-space: nowrap;
+    text-transform: uppercase; letter-spacing: 1px;
+    user-select: none;
+  }
+  .tab:hover { color: var(--sky); }
+  .tab.active { color: var(--sky); border-bottom-color: var(--accent); }
+
+  /* ─── MAIN ─── */
+  .main { max-width: 1600px; margin: 0 auto; padding: 2rem; }
+  .pane { display: none; }
+  .pane.active { display: block; }
+
+  /* ─── SUMMARY KPIs row ─── */
+  .kpi-row { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
+  .kpi-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 1.25rem 1.5rem;
+    position: relative; overflow: hidden;
+    transition: transform .2s;
+  }
+  .kpi-card:hover { transform: translateY(-3px); }
+  .kpi-card::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+    background: linear-gradient(90deg, var(--accent), var(--sky));
+  }
+  .kpi-card.gold::before { background: linear-gradient(90deg, var(--gold), var(--gold2)); }
+  .kpi-card.green::before { background: linear-gradient(90deg, var(--green), #34d399); }
+  .kpi-card.red::before { background: linear-gradient(90deg, var(--red), #f87171); }
+  .kpi-label { font-size: 0.68rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 0.5rem; }
+  .kpi-value { font-family: 'Bebas Neue', sans-serif; font-size: 2rem; color: var(--white); letter-spacing: 1px; line-height: 1; }
+  .kpi-sub { font-size: 0.7rem; color: var(--muted); margin-top: 0.3rem; }
+  .kpi-badge {
+    display: inline-block; padding: 2px 8px; border-radius: 20px;
+    font-size: 0.65rem; font-weight: 700; margin-top: 0.4rem;
+  }
+  .badge-green { background: rgba(16,185,129,0.15); color: #34d399; }
+  .badge-red { background: rgba(239,68,68,0.15); color: #f87171; }
+  .badge-gold { background: rgba(245,158,11,0.15); color: var(--gold2); }
+
+  /* ─── CARDS ─── */
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    box-shadow: var(--shadow);
+  }
+  .card-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.2rem; letter-spacing: 2px;
+    color: var(--sky); margin-bottom: 1rem;
+    display: flex; align-items: center; gap: 0.5rem;
+  }
+  .card-title .icon { font-size: 1rem; }
+
+  /* ─── GRID LAYOUTS ─── */
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+  .grid-3 { display: grid; grid-template-columns: repeat(3,1fr); gap: 1.5rem; }
+  @media(max-width:1100px) { .grid-2 { grid-template-columns: 1fr; } }
+  @media(max-width:900px) { .grid-3 { grid-template-columns: 1fr 1fr; } }
+  @media(max-width:600px) { .grid-3 { grid-template-columns: 1fr; } }
+
+  /* ─── TABLES ─── */
+  .table-wrap { overflow-x: auto; border-radius: 10px; }
+  table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+  thead th {
+    background: rgba(37,99,235,0.15);
+    color: var(--sky);
+    font-size: 0.7rem; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 1px;
+    padding: 0.75rem 1rem;
+    border-bottom: 2px solid var(--border);
+    white-space: nowrap;
+    text-align: left;
+  }
+  tbody tr {
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    transition: background .15s;
+  }
+  tbody tr:hover { background: rgba(37,99,235,0.07); }
+  tbody td { padding: 0.65rem 1rem; vertical-align: middle; }
+  .num { text-align: right; font-variant-numeric: tabular-nums; }
+  .provider-chip {
+    display: inline-block; padding: 3px 10px; border-radius: 20px;
+    font-size: 0.72rem; font-weight: 700;
+  }
+  .chip-evoltis   { background: rgba(239,68,68,.15);   color: #f87171; }
+  .chip-bircle    { background: rgba(245,158,11,.15);  color: #fbbf24; }
+  .chip-teleprom  { background: rgba(16,185,129,.15);  color: #34d399; }
+  .chip-quabund   { background: rgba(167,139,250,.15); color: #a78bfa; }
+  .chip-thinkchat { background: rgba(59,130,246,.15);  color: #93c5fd; }
+  .chip-thinkchatsi { background: rgba(20,184,166,.15); color: #5eead4; }
+  .winner-row td { font-weight: 700; }
+  .best-cell { background: rgba(16,185,129,0.12); color: #34d399; font-weight: 700; }
+  .base-cell { background: rgba(245,158,11,0.1); border-left: 3px solid var(--gold2); }
+  .changed-cell { background: rgba(239,68,68,0.12); color: #f87171; }
+
+  /* ─── SENSITIVITY CONTROLS ─── */
+  .sens-controls {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(220px,1fr));
+    gap: 1rem; margin-bottom: 1.5rem;
+  }
+  .sens-item { display: flex; flex-direction: column; gap: 0.4rem; }
+  .sens-item label { font-size: 0.72rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
+  .sens-item .val-display {
+    display: flex; justify-content: space-between; align-items: center;
+    font-size: 0.8rem;
+  }
+  .sens-item .base-tag {
+    font-size: 0.65rem; background: rgba(245,158,11,0.2); color: var(--gold2);
+    padding: 1px 6px; border-radius: 4px; font-weight: 700;
+  }
+  .sens-item .changed-tag {
+    font-size: 0.65rem; background: rgba(239,68,68,0.2); color: #f87171;
+    padding: 1px 6px; border-radius: 4px; font-weight: 700; display: none;
+  }
+  input[type=range] {
+    width: 100%; accent-color: var(--accent);
+    height: 4px; border-radius: 4px; cursor: pointer;
+  }
+
+  /* ─── QUALITATIVE GRID ─── */
+  .qual-grid {
+    display: grid;
+    grid-template-columns: 160px repeat(5, 1fr);
+    gap: 0;
+    font-size: 0.78rem;
+  }
+  .qual-header {
+    background: rgba(37,99,235,0.15);
+    color: var(--sky);
+    font-size: 0.7rem; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 1px;
+    padding: 0.7rem 0.8rem;
+    border: 1px solid rgba(255,255,255,0.06);
+  }
+  .qual-row-label {
+    background: rgba(37,99,235,0.08);
+    color: var(--muted);
+    font-size: 0.72rem; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.8px;
+    padding: 0.7rem 0.8rem;
+    border: 1px solid rgba(255,255,255,0.06);
+    display: flex; align-items: flex-start;
+  }
+  .qual-cell {
+    padding: 0.7rem 0.8rem;
+    border: 1px solid rgba(255,255,255,0.06);
+    color: var(--text);
+    line-height: 1.45;
+    font-size: 0.74rem;
+    vertical-align: top;
+  }
+  .qual-cell:nth-child(even) { background: rgba(255,255,255,0.02); }
+
+  /* ─── STAR RATING ─── */
+  .stars { color: var(--gold2); font-size: 0.9rem; }
+
+  /* ─── CHART containers ─── */
+  .chart-container { position: relative; width: 100%; }
+  .chart-container canvas { max-width: 100%; }
+
+  /* ─── CONCLUSIONS ─── */
+  .conclusion-list { display: flex; flex-direction: column; gap: 0.75rem; }
+  .conclusion-item {
+    display: flex; gap: 1rem; align-items: flex-start;
+    background: rgba(255,255,255,0.03);
+    border-left: 3px solid var(--accent);
+    border-radius: 0 8px 8px 0;
+    padding: 0.8rem 1rem;
+  }
+  .conclusion-item .ci-icon { font-size: 1.2rem; flex-shrink: 0; }
+  .conclusion-item p { font-size: 0.82rem; color: var(--text); line-height: 1.55; }
+  .conclusion-item.green-border { border-left-color: var(--green); }
+  .conclusion-item.gold-border { border-left-color: var(--gold2); }
+  .conclusion-item.red-border { border-left-color: var(--red); }
+
+  /* ─── UPLOAD INFO ─── */
+  .upload-banner {
+    background: rgba(37,99,235,0.08); border: 1px dashed var(--border);
+    border-radius: 10px; padding: 0.75rem 1rem;
+    font-size: 0.78rem; color: var(--muted);
+    display: flex; align-items: center; gap: 0.5rem;
+    margin-bottom: 1.5rem;
+  }
+  .upload-banner span { color: var(--sky); }
+
+  /* ─── ANIMATE IN ─── */
+  @keyframes fadeUp { from { opacity:0; transform: translateY(18px); } to { opacity:1; transform: translateY(0); } }
+  .pane.active .card, .pane.active .kpi-card { animation: fadeUp .35s ease both; }
+  .pane.active .kpi-card:nth-child(2) { animation-delay:.05s; }
+  .pane.active .kpi-card:nth-child(3) { animation-delay:.1s; }
+  .pane.active .kpi-card:nth-child(4) { animation-delay:.15s; }
+  .pane.active .kpi-card:nth-child(5) { animation-delay:.2s; }
+  .pane.active .card:nth-child(2) { animation-delay:.07s; }
+  .pane.active .card:nth-child(3) { animation-delay:.14s; }
+
+  /* ─── RESPONSIVE ─── */
+  @media(max-width:768px) {
+    .header-inner { flex-wrap: wrap; padding: 0.75rem 0; }
+    .header-kpi { display: none; }
+    .main { padding: 1rem; }
+    .qual-grid { grid-template-columns: 120px repeat(5,1fr); font-size: 0.68rem; }
+  }
+
+  /* ─── BADGE ROW ─── */
+  .badge-row { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 0.5rem; }
+
+  .divider { height: 1px; background: var(--border); margin: 1.5rem 0; }
+
+  .section-label {
+    font-size: 0.68rem; color: var(--muted);
+    text-transform: uppercase; letter-spacing: 2px;
+    margin-bottom: 0.75rem;
+    display: flex; align-items: center; gap: 0.5rem;
+  }
+  .section-label::after { content:''; flex:1; height:1px; background: var(--border); }
+
+  /* winner highlight */
+  .winner-tag {
+    background: linear-gradient(135deg, var(--green), #059669);
+    color: white; font-size: 0.65rem; font-weight: 700;
+    padding: 2px 8px; border-radius: 4px; letter-spacing: 0.5px;
+  }
+</style>
+</head>
+<body>
+
+<!-- ══════════════ HEADER ══════════════ -->
+<header class="header">
+  <div class="header-inner">
+    <div class="brand">
+      <div class="brand-logo">IF</div>
+      <div class="brand-text">
+        <h1>INVERFIN</h1>
+        <p>Dashboard Comparativo · Telecobranzas</p>
+      </div>
+    </div>
+
+    <div class="header-kpi">
+      <div class="kpi-chip">
+        <div class="kv">6</div>
+        <div class="kl">Proveedores</div>
+      </div>
+      <div class="kpi-chip">
+        <div class="kv">70K</div>
+        <div class="kl">Clientes</div>
+      </div>
+      <div class="kpi-chip">
+        <div class="kv" id="hdr-best-annual">$28,389</div>
+        <div class="kl">Menor costo/año</div>
+      </div>
+      <div class="kpi-chip">
+        <div class="kv" id="hdr-best-name">Teleprom</div>
+        <div class="kl">Recomendado</div>
+      </div>
+    </div>
+
+    <div class="header-actions">
+      <button class="btn btn-secondary" onclick="document.getElementById('fileInput').click()">⬆ Cargar Excel</button>
+      <input type="file" id="fileInput" accept=".xlsx,.xls" onchange="handleUpload(event)">
+      <button class="btn btn-gold" onclick="resetToBase()">↺ Reset</button>
+    </div>
+  </div>
+</header>
+
+<!-- ══════════════ TABS ══════════════ -->
+<nav class="tabs-bar" id="tabsBar">
+  <div class="tab active" onclick="switchTab('summary')">📊 Resumen Ejecutivo</div>
+  <div class="tab" onclick="switchTab('cashflow')">💰 Flujo de Caja</div>
+  <div class="tab" onclick="switchTab('chart')">📈 Análisis Gráfico</div>
+  <div class="tab" onclick="switchTab('sensitivity')">🎛 Sensibilidad</div>
+  <div class="tab" onclick="switchTab('qualitative')">⭐ Comparativo Cualitativo</div>
+  <div class="tab" onclick="switchTab('costs')">🧮 Costo Mensual</div>
+</nav>
+
+<!-- ══════════════ MAIN ══════════════ -->
+<div class="main">
+  <div class="upload-banner" id="uploadBanner">
+    📁 Datos hardcodeados del Excel. <span>Cargue un archivo .xlsx</span> para actualizar los datos en tiempo real.
+  </div>
+
+  <!-- ════ PANE: SUMMARY ════ -->
+  <div class="pane active" id="pane-summary">
+    <div class="kpi-row" id="summaryKpis"></div>
+
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-title"><span class="icon">🏆</span> Ranking por Costo Total 5 Años</div>
+        <div class="chart-container" style="height:300px">
+          <canvas id="chart5yr"></canvas>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title"><span class="icon">📉</span> Costo Anual Promedio por Proveedor</div>
+        <div class="chart-container" style="height:300px">
+          <canvas id="chartAnnual"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><span class="icon">📋</span> Tabla Comparativa de Costos – Caso Base</div>
+      <div class="table-wrap">
+        <table id="tableCostsBase">
+          <thead>
+            <tr>
+              <th>Proveedor</th>
+              <th>Factura Local</th>
+              <th class="num">Implementación ($)</th>
+              <th class="num">Soporte Mensual ($)</th>
+              <th class="num">Módulo IA / conv.</th>
+              <th class="num">Licencia Agente ($)</th>
+              <th class="num">Costo Total 5 Años ($)</th>
+              <th class="num">VP 5 Años ($)</th>
+              <th class="num">Costo Anual Prom. ($)</th>
+            </tr>
+          </thead>
+          <tbody id="tbodyCostsBase"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><span class="icon">💡</span> Conclusiones del Análisis</div>
+      <div class="conclusion-list" id="conclusionList"></div>
+    </div>
+  </div>
+
+  <!-- ════ PANE: CASHFLOW ════ -->
+  <div class="pane" id="pane-cashflow">
+    <div class="card">
+      <div class="card-title"><span class="icon">💰</span> Flujo de Caja Proyectado – Teleprom (Caso Base)</div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Concepto</th>
+              <th class="num">Costo Unit.</th>
+              <th class="num">Año 0 ($)</th>
+              <th class="num">Año 1 ($)</th>
+              <th class="num">Año 2 ($)</th>
+              <th class="num">Año 3 ($)</th>
+              <th class="num">Año 4 ($)</th>
+              <th class="num">Año 5 ($)</th>
+              <th class="num">Total ($)</th>
+            </tr>
+          </thead>
+          <tbody id="tbodyCashflowTele"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-title"><span class="icon">📊</span> Flujo Anual Todos los Proveedores</div>
+        <div class="chart-container" style="height:320px">
+          <canvas id="chartFlowAll"></canvas>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title"><span class="icon">🔢</span> Supuestos del Modelo</div>
+        <div class="table-wrap">
+          <table id="tableAssumptions">
+            <thead><tr><th>Parámetro</th><th class="num">Valor</th></tr></thead>
+            <tbody id="tbodyAssumptions"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════ PANE: CHART ════ -->
+  <div class="pane" id="pane-chart">
+    <div class="card">
+      <div class="card-title"><span class="icon">📈</span> Costo Total por Volumen de Conversaciones</div>
+      <div class="chart-container" style="height:420px">
+        <canvas id="chartVolume"></canvas>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="icon">🥇</span> Proveedor más Económico por Volumen</div>
+      <div class="table-wrap">
+        <table id="tableVolume">
+          <thead>
+            <tr>
+              <th class="num">Conversaciones</th>
+              <th class="num">Evoltis</th>
+              <th class="num">Bircle</th>
+              <th class="num">Teleprom</th>
+              <th class="num">Quabum</th>
+              <th class="num">Thinkchat IA</th>
+              <th class="num">Thinkchat Sin IA</th>
+              <th>Más Económico</th>
+            </tr>
+          </thead>
+          <tbody id="tbodyVolume"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════ PANE: SENSITIVITY ════ -->
+  <div class="pane" id="pane-sensitivity">
+    <div class="card">
+      <div class="card-title"><span class="icon">🎛</span> Parámetros de Sensibilidad</div>
+      <p style="font-size:0.78rem;color:var(--muted);margin-bottom:1rem">
+        Ajuste los parámetros. Los valores <span style="color:var(--gold2);font-weight:700">dorados</span> indican el caso base;
+        los valores <span style="color:#f87171;font-weight:700">rojos</span> indican cambios respecto al caso base.
+      </p>
+      <div class="sens-controls" id="sensControls"></div>
+      <button class="btn btn-gold" style="margin-top:0.5rem" onclick="resetToBase()">↺ Restaurar Caso Base</button>
+    </div>
+
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-title"><span class="icon">💡</span> Costo Mensual Sensibilizado</div>
+        <div class="chart-container" style="height:320px">
+          <canvas id="chartSensBar"></canvas>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title"><span class="icon">📋</span> Tabla de Resultados Sensibilizados</div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Proveedor</th>
+                <th class="num">Caso Base ($)</th>
+                <th class="num">Escenario ($)</th>
+                <th class="num">Δ Variación</th>
+              </tr>
+            </thead>
+            <tbody id="tbodySensResult"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════ PANE: QUALITATIVE ════ -->
+  <div class="pane" id="pane-qualitative">
+    <div class="card">
+      <div class="card-title"><span class="icon">⭐</span> Comparativo Cualitativo de Proveedores</div>
+      <div style="overflow-x:auto">
+        <div class="qual-grid" id="qualGrid"></div>
+      </div>
+    </div>
+    <div class="card" style="margin-top:1.5rem">
+      <div class="card-title"><span class="icon">🎯</span> Calificación por Dimensión</div>
+      <div class="chart-container" style="height:360px">
+        <canvas id="chartRadar"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════ PANE: COSTS ════ -->
+  <div class="pane" id="pane-costs">
+    <div class="kpi-row" id="monthlyCostKpis"></div>
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-title"><span class="icon">💵</span> Costo Mensual Fijo por Proveedor</div>
+        <div class="chart-container" style="height:300px">
+          <canvas id="chartMonthlyFixed"></canvas>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title"><span class="icon">📦</span> Costo Variable Mensual por Proveedor</div>
+        <div class="chart-container" style="height:300px">
+          <canvas id="chartMonthlyVar"></canvas>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="icon">🧾</span> Detalle Costo Mensual – Fijos</div>
+      <div class="table-wrap">
+        <table id="tableMonthlyFixed">
+          <thead><tr><th>Proveedor</th><th>Concepto</th><th class="num">Cantidad</th><th class="num">Precio Unit.</th><th class="num">Total ($)</th></tr></thead>
+          <tbody id="tbodyMonthlyFixed"></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="card" style="margin-top:1.5rem">
+      <div class="card-title"><span class="icon">🔄</span> Detalle Costo Variable Mensual</div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Proveedor</th><th>Concepto</th><th class="num">Cantidad</th><th class="num">Precio Unit.</th><th class="num">Total ($)</th></tr></thead>
+          <tbody id="tbodyMonthlyVar"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /main -->
+
+<script>
+// ═══════════════════════════════════════════════
+//  BASE DATA (hardcoded from Excel)
+// ═══════════════════════════════════════════════
+const BASE = {
+  assumptions: {
+    clientes: 70000,
+    msjPorCliente: 5,
+    totalMensajes: 350000,
+    msjEntranteMes: 3000,
+    agentesTeleo: 66,
+    agentesTV: 130,
+    tasa: 0.10  // discount rate
+  },
+  providers: [
+    { name:'Evoltis',         chip:'chip-evoltis',
+      impl:810,    soporte:0,      modIA:0.041,  msjUtil:0.0113, licencia:77.62, mensajeEntrant:0,   factLocal:'Sí',
+      total5yr:547645.2, vp5yr:404993.86, costAnual:80998.77 },
+    { name:'Bircle',          chip:'chip-bircle',
+      impl:1550.27,soporte:1550.27,modIA:0.041,  msjUtil:0.0113, licencia:0,     mensajeEntrant:0,   factLocal:'No',
+      total5yr:389478.2, vp5yr:288298.14, costAnual:57659.63 },
+    { name:'Teleprom',        chip:'chip-teleprom',
+      impl:350,    soporte:250,    modIA:0.0114, msjUtil:0.0113, licencia:15,    mensajeEntrant:0.0113, factLocal:'Sí',
+      total5yr:191924,   vp5yr:141946.55, costAnual:28389.31 },
+    { name:'Quabund',         chip:'chip-quabund',
+      impl:3975,   soporte:0,      modIA:0.12,   msjUtil:0.0113, licencia:15,    mensajeEntrant:0,   factLocal:'Sí',
+      total5yr:627435,   vp5yr:464698.85, costAnual:92939.77 },
+    { name:'Thinkchat',       chip:'chip-thinkchat',
+      impl:1600,   soporte:0,      modIA:0.06,   msjUtil:0.0113, licencia:15,    mensajeEntrant:0,   factLocal:'Sí',
+      total5yr:360460,   vp5yr:266811.63, costAnual:53362.33 },
+    { name:'Thinkchat Sin IA',chip:'chip-thinkchatsi',
+      impl:1600,   soporte:0,      modIA:0.042,  msjUtil:0.1299, licencia:20,    mensajeEntrant:0,   factLocal:'Sí',
+      total5yr:304660,   vp5yr:225565.42, costAnual:45113.08 },
+  ],
+  cashflow: {
+    teleprom: [
+      { concept:'Implementación y entrenamiento', unit:350, yr0:350, yr1:0,yr2:0,yr3:0,yr4:0,yr5:0, total:350 },
+      { concept:'Módulo IA por Conversaciones',   unit:0.0114, yr0:0, yr1:9576,yr2:9576,yr3:9576,yr4:9576,yr5:9576, total:47880 },
+      { concept:'Msj de Utilidad (Meta)',          unit:0.0113, yr0:0, yr1:9492,yr2:9492,yr3:9492,yr4:9492,yr5:9492, total:47460 },
+      { concept:'Módulo con IA',                  unit:0,      yr0:0, yr1:0,yr2:0,yr3:0,yr4:0,yr5:0, total:0 },
+      { concept:'Módulo sin IA',                  unit:0,      yr0:0, yr1:0,yr2:0,yr3:0,yr4:0,yr5:0, total:0 },
+      { concept:'Mensaje Entrante',               unit:0.0113, yr0:0, yr1:406.8,yr2:406.8,yr3:406.8,yr4:406.8,yr5:406.8, total:2034 },
+      { concept:'Soporte y Mantenimiento',        unit:250,    yr0:0, yr1:3000,yr2:3000,yr3:3000,yr4:3000,yr5:3000, total:15000 },
+      { concept:'Licencia por agente',            unit:15,     yr0:0, yr1:11880,yr2:11880,yr3:11880,yr4:11880,yr5:11880, total:59400 },
+      { concept:'Costo por Salir (Thinkchat)',    unit:5,      yr0:0, yr1:3960,yr2:3960,yr3:3960,yr4:3960,yr5:3960, total:19800 },
+      { concept:'Impuestos no recuperables',      unit:0,      yr0:0, yr1:0,yr2:0,yr3:0,yr4:0,yr5:0, total:0 },
+    ]
+  },
+  volumeData: [
+    {convs:3000,  evoltis:6562,  bircle:3600,  teleprom:363.5, quabum:1380, thinkchatIA:300,  thinkchatSin:200,  winner:'Thinkchat Sin IA'},
+    {convs:10000, evoltis:6812,  bircle:5650,  teleprom:477,   quabum:1980, thinkchatIA:600,  thinkchatSin:400,  winner:'Thinkchat Sin IA'},
+    {convs:20000, evoltis:7312,  bircle:9750,  teleprom:704,   quabum:3180, thinkchatIA:1200, thinkchatSin:800,  winner:'Teleprom'},
+    {convs:30000, evoltis:7812,  bircle:13850, teleprom:931,   quabum:4380, thinkchatIA:1800, thinkchatSin:1200, winner:'Teleprom'},
+    {convs:40000, evoltis:8312,  bircle:17950, teleprom:1158,  quabum:5580, thinkchatIA:2400, thinkchatSin:1600, winner:'Teleprom'},
+    {convs:50000, evoltis:8812,  bircle:22050, teleprom:1385,  quabum:6780, thinkchatIA:3000, thinkchatSin:2000, winner:'Teleprom'},
+    {convs:60000, evoltis:9312,  bircle:26150, teleprom:1612,  quabum:7980, thinkchatIA:3600, thinkchatSin:2400, winner:'Teleprom'},
+    {convs:70000, evoltis:9812,  bircle:30250, teleprom:1839,  quabum:9180, thinkchatIA:4200, thinkchatSin:2800, winner:'Teleprom'},
+    {convs:80000, evoltis:10312, bircle:34350, teleprom:2066,  quabum:10380,thinkchatIA:4800, thinkchatSin:3200, winner:'Teleprom'},
+  ],
+  qualitative: {
+    criteria: ['Trayectoria','Clientes','Flexibilidad / Escalabilidad','Funcionalidades','Implementación','Relevancia para Inverfin'],
+    providers: ['Evoltis','Bircle','Teleprom','Quabund','Thinkchat'],
+    data: [
+      // Trayectoria
+      ['Más de 10 años como empresa CX Tech argentina, con presencia en contact centers, cobranzas y outsourcing para empresas medianas y grandes.',
+       'Startup joven enfocada 100% en IA conversacional para cobranzas y pagos recurrentes de PYMES, mercados de habla hispana; alta tracción mediática reciente.',
+       'Empresa de mensajería y notificaciones con trayectoria en SMS, email y WhatsApp masivo, posicionada como "partner de mensajería" aliada de plataformas de cobranzas.',
+       'Prácticamente sin información pública específica sobre trayectoria en cobranzas por WhatsApp, lo que sugiere menor madurez o soluciones muy custom.',
+       'Más de 10 años en omnicanal Paraguay, presente en Expo eCommerce con bots 24/7.'],
+      // Clientes
+      ['Banco Galicia, Red S.O.S, Municipalidad de Córdoba; outsourcing de cobranza para múltiples industrias.',
+       'Nico Tiendas, Carrefour, Natura, Avon; +30 clientes en finanzas, telco y salud.',
+       'Naranja X (premio ALOIC); +20 implementaciones exitosas en cobranzas WhatsApp.',
+       'Aseguradora del Este.',
+       'Empresas eCommerce Paraguay; usado por Inverfin actualmente en WhatsApp manual.'],
+      // Flexibilidad
+      ['Alta: omnicanal (WhatsApp, SMS, email, llamadas), híbrido bots-humanos, cloud escalable.',
+       'Alta: IA adaptable por comportamiento de pago, omnicanal, integra gateways como Mercado Pago.',
+       'Media-alta: outbound/inbound masivo WhatsApp, personalización por perfil moroso.',
+       'N/D',
+       'Alta: integra WhatsApp, Instagram, SMS; bots escalables para picos como Black Friday.'],
+      // Funcionalidades
+      ['Omnicanal automatizado, IA para segmentación, chatbots, priorización deudores, compliance.',
+       'IA conversacional, recordatorios, negociación, algoritmos de riesgo, reportes y métricas.',
+       'Envíos masivos personalizados WhatsApp/SMS, chatbots; +40% contactabilidad vs. tradicionales.',
+       'N/D',
+       'Omnicanal marketing/ventas, bots IA, segmentación, remarketing WhatsApp.'],
+      // Implementación
+      ['Rápida para BPO; integra sistemas existentes, flujos automatizados en semanas.',
+       'API fácil, white-label, monitoreo de campañas; implementación ágil para PYMES.',
+       'Plataforma lista: API transaccional, +20 casos en meses con alto ROI.',
+       'N/D',
+       'Ya implementado en Inverfin; omnicanal centralizado, analíticas en tiempo real.'],
+      // Relevancia
+      ['Experiencia LATAM/Paraguay en sector financiero, omnicanal para telecobranzas retail.',
+       'Muy alta: IA para morosidad retail, integra pagos; alternativa a ThinkChat manual.',
+       'Alta: expertise WhatsApp cobranzas, mejora contactabilidad para créditos de consumo.',
+       'N/D',
+       'Media: actual pero sin IA nativa; base para upgrade de automatización.'],
+    ],
+    scores: [
+      // evoltis, bircle, teleprom, quabund, thinkchat
+      [4,3,4,2,4],  // trayectoria
+      [5,4,5,2,3],  // clientes
+      [5,4,4,2,5],  // flexibilidad
+      [4,4,4,2,3],  // funcionalidades
+      [4,4,5,2,5],  // implementacion
+      [4,5,5,2,3],  // relevancia
+    ]
+  },
+  monthlyFixed: [
+    // Evoltis
+    { prov:'Evoltis', concept:'Licencias agente/supervisor', qty:60, unit:4657, total:4657 },
+    { prov:'Evoltis', concept:'Licencia WhatsApp API', qty:3, unit:382, total:382 },
+    { prov:'Evoltis', concept:'Sesiones ChatGPT', qty:1, unit:127, total:127 },
+    { prov:'Evoltis', concept:'Voicebot con IA', qty:1, unit:559, total:559 },
+    { prov:'Evoltis', concept:'SIP Trunk 5 Canales', qty:24, unit:587, total:587 },
+    // Bircle
+    { prov:'Bircle', concept:'Módulo Core + Reportes y Analíticas (Soporte)', qty:1, unit:1550.27, total:1550.27 },
+    // Teleprom
+    { prov:'Teleprom', concept:'Chatbot Determinístico Soporte/Mantenimiento/Evolutivo', qty:1, unit:250, total:250 },
+    // Quabum
+    { prov:'Quabum', concept:'1000 conversaciones humanizadas + Módulo IA 24hs', qty:1000, unit:0.78, total:780 },
+    // Thinkchat
+    { prov:'Thinkchat', concept:'(Sin costo fijo mensual adicional)', qty:0, unit:0, total:0 },
+  ],
+  monthlyVar: [
+    // Evoltis
+    { prov:'Evoltis', concept:'Msj Meta (Utilidad)', qty:350000, unit:0.0113, total:3955 },
+    { prov:'Evoltis', concept:'Módulo IA', qty:350000, unit:0.041, total:14350 },
+    { prov:'Evoltis', concept:'Licencias por Agentes', qty:66, unit:15, total:990 },
+    { prov:'Evoltis', concept:'Mensaje Entrante', qty:3000, unit:0, total:0 },
+    // Bircle
+    { prov:'Bircle', concept:'Módulo IA Conversacional por WhatsApp', qty:0, unit:0.041, total:0 },
+    { prov:'Bircle', concept:'WhatsApp API por Meta (Utilidad)', qty:350000, unit:0.0113, total:3955 },
+    // Teleprom
+    { prov:'Teleprom', concept:'Msj Meta (Utilidad)', qty:350000, unit:0.0113, total:3955 },
+    { prov:'Teleprom', concept:'Módulo IA por mensaje', qty:350000, unit:0.0114, total:3990 },
+    { prov:'Teleprom', concept:'Licencias por Agentes', qty:66, unit:15, total:990 },
+    { prov:'Teleprom', concept:'Mensaje Entrante', qty:3000, unit:0.012, total:36 },
+    // Quantum/Quabum
+    { prov:'Quabum', concept:'Msj Meta (Utilidad)', qty:350000, unit:0.0113, total:3955 },
+    { prov:'Quabum', concept:'Licencia por usuario', qty:66, unit:15, total:990 },
+    { prov:'Quabum', concept:'Módulo IA por conversación', qty:69000, unit:0.12, total:8280 },
+    // Thinkchat
+    { prov:'Thinkchat', concept:'Msj Meta (Utilidad)', qty:70000, unit:0.0113, total:791 },
+    { prov:'Thinkchat', concept:'Módulo IA por Conversación', qty:70000, unit:0.06, total:4200 },
+    { prov:'Thinkchat', concept:'Licencia', qty:66, unit:15, total:990 },
+    // Thinkchat Sin IA
+    { prov:'Thinkchat Sin IA', concept:'Msj Meta (Utilidad)', qty:70000, unit:0.0113, total:791 },
+    { prov:'Thinkchat Sin IA', concept:'Módulo IA por Conversación', qty:70000, unit:0.04, total:2800 },
+    { prov:'Thinkchat Sin IA', concept:'Licencia', qty:66, unit:20, total:1320 },
+  ],
+  conclusions: [
+    { icon:'🏆', text:'Teleprom presenta la curva de costos más plana y se convierte en la opción más competitiva a partir de las 20,000 conversaciones, con un costo anual promedio de $28,389.', type:'green-border' },
+    { icon:'⚠️', text:'Thinkchat Sin IA es la opción más económica en volúmenes bajos (5,000–10,000 conversaciones) gracias a su reducido costo variable.', type:'gold-border' },
+    { icon:'❌', text:'Evoltis y Bircle tienen costos fijos y/o variables elevados, lo que los hace poco competitivos en todo el rango analizado.', type:'red-border' },
+    { icon:'📊', text:'Quabum se ubica en un punto intermedio, pero nunca logra ser la opción más barata frente a Teleprom o Thinkchat Sin IA.', type:'' },
+    { icon:'🤖', text:'Thinkchat con IA es más costoso que su versión sin IA en todo el rango analizado; no resulta conveniente si el único criterio es costo.', type:'red-border' },
+  ]
+};
+
+// Sensibility parameters (mutable)
+let sens = {
+  totalMensajes: BASE.assumptions.totalMensajes,
+  agentes: BASE.assumptions.agentesTeleo,
+  msjEntranteMes: BASE.assumptions.msjEntranteMes,
+};
+const BASE_SENS = { ...sens };
+
+// ═══════════════════════════════════════════════
+//  UTILITIES
+// ═══════════════════════════════════════════════
+const fmt  = (v,d=0) => v == null ? '-' : Number(v).toLocaleString('es-PY',{minimumFractionDigits:d,maximumFractionDigits:d});
+const fmtD = (v,d=4) => v == null ? '-' : Number(v).toLocaleString('es-PY',{minimumFractionDigits:d,maximumFractionDigits:d});
+const chipColor = p => {
+  const map = { 'Evoltis':'chip-evoltis','Bircle':'chip-bircle','Teleprom':'chip-teleprom',
+                'Quabund':'chip-quabund','Quabum':'chip-quabund','Quantum':'chip-quabund',
+                'Thinkchat':'chip-thinkchat','Thinkchat Sin IA':'chip-thinkchatsi' };
+  return map[p] || 'chip-thinkchat';
+};
+const provChip = p => `<span class="provider-chip ${chipColor(p)}">${p}</span>`;
+
+let charts = {};
+function destroyChart(id) { if(charts[id]) { charts[id].destroy(); delete charts[id]; } }
+
+// ═══════════════════════════════════════════════
+//  TAB SWITCHING
+// ═══════════════════════════════════════════════
+function switchTab(id) {
+  document.querySelectorAll('.pane').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('pane-'+id).classList.add('active');
+  const tabs = document.querySelectorAll('.tab');
+  const map = ['summary','cashflow','chart','sensitivity','qualitative','costs'];
+  tabs[map.indexOf(id)]?.classList.add('active');
+  setTimeout(() => renderTabCharts(id), 50);
+}
+
+function renderTabCharts(id) {
+  if(id==='summary')     { renderSummaryCharts(); }
+  if(id==='cashflow')    { renderCashflowCharts(); }
+  if(id==='chart')       { renderVolumeChart(); }
+  if(id==='sensitivity') { renderSensCharts(); }
+  if(id==='qualitative') { renderRadarChart(); }
+  if(id==='costs')       { renderCostCharts(); }
+}
+
+// ═══════════════════════════════════════════════
+//  SUMMARY PANE
+// ═══════════════════════════════════════════════
+function renderSummary() {
+  // KPI cards
+  const sorted = [...BASE.providers].sort((a,b)=>a.costAnual-b.costAnual);
+  const best = sorted[0];
+  const kpis = [
+    { label:'Proveedores Evaluados', val:'6', sub:'Comparación completa', cls:'' },
+    { label:'Clientes Telecobranza', val:'70,000', sub:'Volumen base del modelo', cls:'' },
+    { label:'Proveedor Recomendado', val:best.name, sub:'Menor costo 5 años', cls:'green' },
+    { label:'Costo Anual (mejor)',   val:'$'+fmt(best.costAnual), sub:'Promedio 5 años', cls:'green' },
+    { label:'Ahorro vs. Peor',       val:'$'+fmt(sorted[sorted.length-1].costAnual - best.costAnual), sub:'vs '+sorted[sorted.length-1].name+'/año', cls:'gold' },
+    { label:'VPN Mejor Opción',      val:'$'+fmt(best.vp5yr), sub:'Valor presente 5 años', cls:'' },
+  ];
+  const el = document.getElementById('summaryKpis');
+  el.innerHTML = kpis.map(k=>`
+    <div class="kpi-card ${k.cls}">
+      <div class="kpi-label">${k.label}</div>
+      <div class="kpi-value">${k.val}</div>
+      <div class="kpi-sub">${k.sub}</div>
+    </div>`).join('');
+
+  // Table
+  const tbody = document.getElementById('tbodyCostsBase');
+  const rows = [...BASE.providers].sort((a,b)=>a.total5yr-b.total5yr);
+  tbody.innerHTML = rows.map((p,i)=>{
+    const isBest = i===0;
+    return `<tr class="${isBest?'winner-row':''}">
+      <td>${provChip(p.name)} ${isBest?'<span class="winner-tag">MEJOR</span>':''}</td>
+      <td><span class="kpi-badge ${p.factLocal==='Sí'?'badge-green':'badge-red'}">${p.factLocal}</span></td>
+      <td class="num ${isBest?'best-cell':''}">${fmt(p.impl,2)}</td>
+      <td class="num ${isBest?'best-cell':''}">${fmt(p.soporte,2)}</td>
+      <td class="num ${isBest?'best-cell':''}">${fmtD(p.modIA)}</td>
+      <td class="num ${isBest?'best-cell':''}">${fmt(p.licencia,2)}</td>
+      <td class="num ${isBest?'best-cell':''}">${fmt(p.total5yr,0)}</td>
+      <td class="num ${isBest?'best-cell':''}">${fmt(p.vp5yr,0)}</td>
+      <td class="num ${isBest?'best-cell':''}">${fmt(p.costAnual,0)}</td>
+    </tr>`;
+  }).join('');
+
+  // Conclusions
+  const cl = document.getElementById('conclusionList');
+  cl.innerHTML = BASE.conclusions.map(c=>`
+    <div class="conclusion-item ${c.type}">
+      <div class="ci-icon">${c.icon}</div>
+      <p>${c.text}</p>
+    </div>`).join('');
+
+  // Header KPI update
+  document.getElementById('hdr-best-annual').textContent = '$'+fmt(best.costAnual);
+  document.getElementById('hdr-best-name').textContent = best.name;
+}
+
+function renderSummaryCharts() {
+  const sorted = [...BASE.providers].sort((a,b)=>a.total5yr-b.total5yr);
+  const colors = sorted.map(p=>({
+    'Evoltis':'rgba(239,68,68,0.8)','Bircle':'rgba(245,158,11,0.8)',
+    'Teleprom':'rgba(16,185,129,0.8)','Quabund':'rgba(167,139,250,0.8)',
+    'Thinkchat':'rgba(59,130,246,0.8)','Thinkchat Sin IA':'rgba(20,184,166,0.8)'
+  }[p.name]||'rgba(148,163,184,0.8)'));
+
+  destroyChart('chart5yr');
+  charts['chart5yr'] = new Chart(document.getElementById('chart5yr'), {
+    type:'bar',
+    data:{ labels:sorted.map(p=>p.name),
+      datasets:[{label:'Costo Total 5 Años ($)',data:sorted.map(p=>p.total5yr),backgroundColor:colors,borderRadius:6,borderSkipped:false}] },
+    options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>'$'+fmt(c.raw)}}},
+      scales:{ y:{ticks:{callback:v=>'$'+fmt(v),color:'#94a3b8'},grid:{color:'rgba(255,255,255,0.05)'}},
+               x:{ticks:{color:'#94a3b8'},grid:{display:false}} } }
+  });
+
+  const sorted2 = [...BASE.providers].sort((a,b)=>a.costAnual-b.costAnual);
+  const colors2 = sorted2.map(p=>({
+    'Evoltis':'rgba(239,68,68,0.8)','Bircle':'rgba(245,158,11,0.8)',
+    'Teleprom':'rgba(16,185,129,0.8)','Quabund':'rgba(167,139,250,0.8)',
+    'Thinkchat':'rgba(59,130,246,0.8)','Thinkchat Sin IA':'rgba(20,184,166,0.8)'
+  }[p.name]||'rgba(148,163,184,0.8)'));
+
+  destroyChart('chartAnnual');
+  charts['chartAnnual'] = new Chart(document.getElementById('chartAnnual'), {
+    type:'bar', indexAxis:'y',
+    data:{ labels:sorted2.map(p=>p.name),
+      datasets:[{label:'Costo Anual Promedio ($)',data:sorted2.map(p=>p.costAnual),backgroundColor:colors2,borderRadius:6,borderSkipped:false}] },
+    options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>'$'+fmt(c.raw)}}},
+      scales:{ x:{ticks:{callback:v=>'$'+fmt(v),color:'#94a3b8'},grid:{color:'rgba(255,255,255,0.05)'}},
+               y:{ticks:{color:'#94a3b8'},grid:{display:false}} } }
+  });
+}
+
+// ═══════════════════════════════════════════════
+//  CASHFLOW PANE
+// ═══════════════════════════════════════════════
+function renderCashflow() {
+  // Assumptions
+  const tbody = document.getElementById('tbodyAssumptions');
+  const ass = BASE.assumptions;
+  tbody.innerHTML = [
+    ['Cantidad de Clientes', fmt(ass.clientes)],
+    ['Mensajes por chat por cliente', ass.msjPorCliente],
+    ['Total mensajes / mes', fmt(ass.totalMensajes)],
+    ['Mensajes entrantes / mes', fmt(ass.msjEntranteMes)],
+    ['Agentes Telecobranzas', ass.agentesTeleo],
+    ['Agentes Televentas', ass.agentesTV],
+    ['Tasa de descuento (VPN)', (ass.tasa*100).toFixed(0)+'%'],
+  ].map(([k,v])=>`<tr><td>${k}</td><td class="num">${v}</td></tr>`).join('');
+
+  // Teleprom cashflow
+  const tBody = document.getElementById('tbodyCashflowTele');
+  const cf = BASE.cashflow.teleprom;
+  tBody.innerHTML = cf.map(r=>`
+    <tr>
+      <td>${r.concept}</td>
+      <td class="num">${fmtD(r.unit)}</td>
+      <td class="num">${r.yr0?fmt(r.yr0,2):'-'}</td>
+      <td class="num">${r.yr1?fmt(r.yr1,2):'-'}</td>
+      <td class="num">${r.yr2?fmt(r.yr2,2):'-'}</td>
+      <td class="num">${r.yr3?fmt(r.yr3,2):'-'}</td>
+      <td class="num">${r.yr4?fmt(r.yr4,2):'-'}</td>
+      <td class="num">${r.yr5?fmt(r.yr5,2):'-'}</td>
+      <td class="num" style="font-weight:600;color:var(--sky)">${fmt(r.total,2)}</td>
+    </tr>`).join('');
+  // Totals row
+  const totals = [0,1,2,3,4,5].map(yr=>{
+    const k = 'yr'+yr;
+    return cf.reduce((s,r)=>s+(r[k]||0),0);
+  });
+  tBody.innerHTML += `<tr style="background:rgba(37,99,235,0.12);font-weight:700;color:var(--sky)">
+    <td colspan="2">TOTAL</td>
+    ${totals.map(t=>`<td class="num">${fmt(t,2)}</td>`).join('')}
+    <td class="num">${fmt(totals.reduce((a,b)=>a+b,0),2)}</td>
+  </tr>`;
+}
+
+function renderCashflowCharts() {
+  const years = ['Año 1','Año 2','Año 3','Año 4','Año 5'];
+  const annual5 = BASE.providers.map(p => {
+    const yr = (p.total5yr - p.impl) / 5;
+    return { name:p.name, vals: years.map(()=>yr) };
+  });
+  const colorMap = {
+    'Evoltis':'rgba(239,68,68,0.75)','Bircle':'rgba(245,158,11,0.75)',
+    'Teleprom':'rgba(16,185,129,0.75)','Quabund':'rgba(167,139,250,0.75)',
+    'Thinkchat':'rgba(59,130,246,0.75)','Thinkchat Sin IA':'rgba(20,184,166,0.75)'
+  };
+
+  destroyChart('chartFlowAll');
+  charts['chartFlowAll'] = new Chart(document.getElementById('chartFlowAll'), {
+    type:'line',
+    data:{ labels:years,
+      datasets: annual5.map(p=>({
+        label:p.name, data:p.vals.map((_,i)=>p.vals[i]),
+        borderColor:colorMap[p.name]||'#94a3b8', backgroundColor:'transparent',
+        borderWidth:2, pointRadius:4, tension:0
+      }))
+    },
+    options:{ responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{labels:{color:'#94a3b8',font:{size:11}}}, tooltip:{callbacks:{label:c=>c.dataset.label+': $'+fmt(c.raw)}} },
+      scales:{ y:{ticks:{callback:v=>'$'+fmt(v),color:'#94a3b8'},grid:{color:'rgba(255,255,255,0.05)'}},
+               x:{ticks:{color:'#94a3b8'},grid:{display:false}} } }
+  });
+}
+
+// ═══════════════════════════════════════════════
+//  VOLUME CHART PANE
+// ═══════════════════════════════════════════════
+function renderVolumeTable() {
+  const tbody = document.getElementById('tbodyVolume');
+  const colorMap = { 'Evoltis':'chip-evoltis','Bircle':'chip-bircle','Teleprom':'chip-teleprom',
+    'Quabum':'chip-quabund','Thinkchat IA':'chip-thinkchat','Thinkchat Sin IA':'chip-thinkchatsi' };
+  tbody.innerHTML = BASE.volumeData.map(r=>{
+    const vals = [r.evoltis,r.bircle,r.teleprom,r.quabum,r.thinkchatIA,r.thinkchatSin];
+    const minVal = Math.min(...vals);
+    const cells = vals.map(v=>`<td class="num ${v===minVal?'best-cell':''}">${fmt(v,1)}</td>`).join('');
+    return `<tr><td class="num">${fmt(r.convs)}</td>${cells}<td>${provChip(r.winner)}</td></tr>`;
+  }).join('');
+}
+
+function renderVolumeChart() {
+  const labels = BASE.volumeData.map(r=>fmt(r.convs));
+  const sets = [
+    { label:'Evoltis',          key:'evoltis',     color:'rgba(239,68,68,0.85)' },
+    { label:'Bircle',           key:'bircle',      color:'rgba(245,158,11,0.85)' },
+    { label:'Teleprom',         key:'teleprom',    color:'rgba(16,185,129,0.85)' },
+    { label:'Quabum',           key:'quabum',      color:'rgba(167,139,250,0.85)' },
+    { label:'Thinkchat IA',     key:'thinkchatIA', color:'rgba(59,130,246,0.85)' },
+    { label:'Thinkchat Sin IA', key:'thinkchatSin',color:'rgba(20,184,166,0.85)' },
+  ];
+  destroyChart('chartVolume');
+  charts['chartVolume'] = new Chart(document.getElementById('chartVolume'), {
+    type:'line',
+    data:{ labels,
+      datasets: sets.map(s=>({
+        label:s.label, data:BASE.volumeData.map(r=>r[s.key]),
+        borderColor:s.color, backgroundColor:'transparent',
+        borderWidth:s.label==='Teleprom'?3:2,
+        pointRadius:s.label==='Teleprom'?6:3,
+        tension:0.3,
+        borderDash:s.label==='Thinkchat Sin IA'?[6,3]:[]
+      }))
+    },
+    options:{ responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{labels:{color:'#94a3b8',font:{size:11}}}, tooltip:{callbacks:{label:c=>c.dataset.label+': $'+fmt(c.raw)}} },
+      scales:{ y:{ticks:{callback:v=>'$'+fmt(v),color:'#94a3b8'},grid:{color:'rgba(255,255,255,0.05)'}},
+               x:{title:{display:true,text:'Conversaciones / mes',color:'#94a3b8'},ticks:{color:'#94a3b8'},grid:{display:false}} } }
+  });
+}
+
+// ═══════════════════════════════════════════════
+//  SENSITIVITY PANE
+// ═══════════════════════════════════════════════
+function calcMonthlyCost(p) {
+  const msgs = sens.totalMensajes;
+  const agents = sens.agentes;
+  const entrada = sens.msjEntranteMes;
+
+  const costs = {
+    'Evoltis':         p.modIA * msgs + 0.0113 * msgs + p.licencia * agents + p.mensajeEntrant * entrada,
+    'Bircle':          0.041 * msgs + 0.0113 * msgs,
+    'Teleprom':        p.modIA * msgs + 0.0113 * msgs + p.licencia * agents + p.mensajeEntrant * entrada + p.soporte,
+    'Quabund':         p.modIA * msgs * 0.2 + 0.0113 * msgs + p.licencia * agents,
+    'Thinkchat':       p.modIA * msgs * 0.2 + 0.0113 * msgs * 0.2 + p.licencia * agents,
+    'Thinkchat Sin IA':0.042 * msgs * 0.2 + 0.0113 * msgs * 0.2 + p.licencia * agents,
+  };
+  return costs[p.name] || 0;
+}
+
+function calcBaseMonthlyCost(p) {
+  const msgs = BASE_SENS.totalMensajes;
+  const agents = BASE.assumptions.agentesTeleo;
+  const entrada = BASE_SENS.msjEntranteMes;
+  const costs = {
+    'Evoltis':         p.modIA * msgs + 0.0113 * msgs + p.licencia * agents + p.mensajeEntrant * entrada,
+    'Bircle':          0.041 * msgs + 0.0113 * msgs,
+    'Teleprom':        p.modIA * msgs + 0.0113 * msgs + p.licencia * agents + p.mensajeEntrant * entrada + p.soporte,
+    'Quabund':         p.modIA * msgs * 0.2 + 0.0113 * msgs + p.licencia * agents,
+    'Thinkchat':       p.modIA * msgs * 0.2 + 0.0113 * msgs * 0.2 + p.licencia * agents,
+    'Thinkchat Sin IA':0.042 * msgs * 0.2 + 0.0113 * msgs * 0.2 + p.licencia * agents,
+  };
+  return costs[p.name] || 0;
+}
+
+function renderSensControls() {
+  const el = document.getElementById('sensControls');
+  const params = [
+    { key:'totalMensajes', label:'Total Mensajes / Mes', min:50000, max:700000, step:10000, base:350000, fmt:'#,###' },
+    { key:'agentes',       label:'Agentes (Telecobranzas)', min:20, max:200, step:5, base:66, fmt:'#' },
+    { key:'msjEntranteMes',label:'Mensajes Entrantes / Mes', min:500, max:10000, step:250, base:3000, fmt:'#,###' },
+  ];
+  el.innerHTML = params.map(p=>`
+    <div class="sens-item">
+      <label>${p.label}</label>
+      <div class="val-display">
+        <span id="sv-${p.key}">${fmt(sens[p.key])}</span>
+        <span class="base-tag" id="btag-${p.key}">BASE: ${fmt(p.base)}</span>
+        <span class="changed-tag" id="ctag-${p.key}">≠ BASE</span>
+      </div>
+      <input type="range" min="${p.min}" max="${p.max}" step="${p.step}"
+             value="${sens[p.key]}" id="rng-${p.key}"
+             oninput="updateSens('${p.key}', this.value, ${p.base})">
+    </div>`).join('');
+}
+
+function updateSens(key, val, base) {
+  sens[key] = parseFloat(val);
+  document.getElementById('sv-'+key).textContent = fmt(sens[key]);
+  const changed = sens[key] !== base;
+  document.getElementById('btag-'+key).style.display = changed ? 'none' : 'inline';
+  document.getElementById('ctag-'+key).style.display = changed ? 'inline' : 'none';
+  renderSensCharts();
+}
+
+function renderSensCharts() {
+  const baseVals   = BASE.providers.map(p => calcBaseMonthlyCost(p));
+  const scenVals   = BASE.providers.map(p => calcMonthlyCost(p));
+  const names      = BASE.providers.map(p => p.name);
+  const colorMap   = ['rgba(239,68,68,0.8)','rgba(245,158,11,0.8)','rgba(16,185,129,0.8)','rgba(167,139,250,0.8)','rgba(59,130,246,0.8)','rgba(20,184,166,0.8)'];
+
+  destroyChart('chartSensBar');
+  charts['chartSensBar'] = new Chart(document.getElementById('chartSensBar'), {
+    type:'bar',
+    data:{ labels:names,
+      datasets:[
+        { label:'Caso Base', data:baseVals, backgroundColor:colorMap.map(c=>c.replace('0.8','0.35')), borderRadius:6,borderSkipped:false },
+        { label:'Escenario', data:scenVals, backgroundColor:colorMap, borderRadius:6,borderSkipped:false },
+      ]
+    },
+    options:{ responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{labels:{color:'#94a3b8'}}, tooltip:{callbacks:{label:c=>c.dataset.label+': $'+fmt(c.raw)}} },
+      scales:{ y:{ticks:{callback:v=>'$'+fmt(v),color:'#94a3b8'},grid:{color:'rgba(255,255,255,0.05)'}},
+               x:{ticks:{color:'#94a3b8'},grid:{display:false}} } }
+  });
+
+  // Table
+  const tbody = document.getElementById('tbodySensResult');
+  tbody.innerHTML = BASE.providers.map((p,i)=>{
+    const bv = baseVals[i], sv = scenVals[i];
+    const delta = sv - bv;
+    const pct = bv>0 ? (delta/bv*100).toFixed(1) : '0.0';
+    const cls = delta>0 ? 'badge-red' : delta<0 ? 'badge-green' : 'badge-gold';
+    const sign = delta>=0 ? '+' : '';
+    return `<tr>
+      <td>${provChip(p.name)}</td>
+      <td class="num base-cell">$${fmt(bv,0)}</td>
+      <td class="num ${delta!==0?'changed-cell':''}">$${fmt(sv,0)}</td>
+      <td class="num"><span class="kpi-badge ${cls}">${sign}${pct}%</span></td>
+    </tr>`;
+  }).join('');
+}
+
+function resetToBase() {
+  sens = { ...BASE_SENS };
+  const params = ['totalMensajes','agentes','msjEntranteMes'];
+  const bases  = [350000, 66, 3000];
+  params.forEach((k,i)=>{
+    const el = document.getElementById('rng-'+k);
+    if(el) {
+      el.value = bases[i];
+      document.getElementById('sv-'+k).textContent = fmt(bases[i]);
+      document.getElementById('btag-'+k).style.display = 'inline';
+      document.getElementById('ctag-'+k).style.display = 'none';
+    }
+  });
+  renderSensCharts();
+}
+
+// ═══════════════════════════════════════════════
+//  QUALITATIVE PANE
+// ═══════════════════════════════════════════════
+function renderQualitative() {
+  const q = BASE.qualitative;
+  const el = document.getElementById('qualGrid');
+  let html = `<div class="qual-header">Criterio</div>`;
+  q.providers.forEach(p=>{ html += `<div class="qual-header" style="text-align:center">${p}</div>`; });
+
+  q.criteria.forEach((c,ri)=>{
+    html += `<div class="qual-row-label">${c}</div>`;
+    q.providers.forEach((_,ci)=>{
+      html += `<div class="qual-cell">${q.data[ri][ci]}</div>`;
+    });
+  });
+
+  // Scores row
+  html += `<div class="qual-header" style="color:var(--gold2)">Puntuación (1-5)</div>`;
+  q.providers.forEach((_,ci)=>{
+    const total = q.scores.reduce((s,r)=>s+r[ci],0);
+    const avg = (total/q.scores.length).toFixed(1);
+    const stars = '★'.repeat(Math.round(avg)) + '☆'.repeat(5-Math.round(avg));
+    html += `<div class="qual-cell" style="text-align:center">
+      <div class="stars">${stars}</div>
+      <div style="font-weight:700;color:var(--gold2);margin-top:2px">${avg}/5</div>
+    </div>`;
+  });
+  el.innerHTML = html;
+}
+
+function renderRadarChart() {
+  const q = BASE.qualitative;
+  const colorMap = ['rgba(239,68,68,.75)','rgba(245,158,11,.75)','rgba(16,185,129,.75)','rgba(167,139,250,.75)','rgba(59,130,246,.75)'];
+  destroyChart('chartRadar');
+  charts['chartRadar'] = new Chart(document.getElementById('chartRadar'), {
+    type:'radar',
+    data:{ labels:q.criteria,
+      datasets: q.providers.map((p,i)=>({
+        label:p, data:q.scores.map(r=>r[i]),
+        borderColor:colorMap[i], backgroundColor:colorMap[i].replace('.75','.12'),
+        borderWidth:2, pointRadius:4
+      }))
+    },
+    options:{ responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{labels:{color:'#94a3b8',font:{size:11}}} },
+      scales:{ r:{min:0,max:5, ticks:{stepSize:1,color:'#94a3b8',backdropColor:'transparent'},
+        angleLines:{color:'rgba(255,255,255,0.1)'}, grid:{color:'rgba(255,255,255,0.08)'},
+        pointLabels:{color:'#cbd5e1',font:{size:11}} } }
+    }
+  });
+}
+
+// ═══════════════════════════════════════════════
+//  COSTS PANE
+// ═══════════════════════════════════════════════
+function renderCosts() {
+  // Monthly fixed totals per provider
+  const fixedByProv = {};
+  BASE.providers.forEach(p=>fixedByProv[p.name]=0);
+  BASE.monthlyFixed.forEach(r=>{ fixedByProv[r.prov] = (fixedByProv[r.prov]||0) + r.total; });
+
+  // Monthly var totals per provider
+  const varByProv = {};
+  BASE.providers.forEach(p=>varByProv[p.name]=0);
+  BASE.monthlyVar.forEach(r=>{ varByProv[r.prov] = (varByProv[r.prov]||0) + r.total; });
+
+  // KPI cards for total monthly
+  const kpiEl = document.getElementById('monthlyCostKpis');
+  kpiEl.innerHTML = BASE.providers.map(p=>{
+    const tot = (fixedByProv[p.name]||0) + (varByProv[p.name]||0);
+    return `<div class="kpi-card"><div class="kpi-label">${p.name}</div>
+      <div class="kpi-value" style="font-size:1.4rem">$${fmt(tot,0)}</div>
+      <div class="kpi-sub">Costo mensual total</div></div>`;
+  }).join('');
+
+  // Table fixed
+  const tbody = document.getElementById('tbodyMonthlyFixed');
+  tbody.innerHTML = BASE.monthlyFixed.map(r=>`
+    <tr><td>${provChip(r.prov)}</td><td>${r.concept}</td>
+    <td class="num">${r.qty?fmt(r.qty):'-'}</td>
+    <td class="num">${r.unit?fmt(r.unit,2):'-'}</td>
+    <td class="num" style="font-weight:600">$${fmt(r.total,2)}</td></tr>`).join('');
+
+  // Table var
+  const tbodyV = document.getElementById('tbodyMonthlyVar');
+  tbodyV.innerHTML = BASE.monthlyVar.map(r=>`
+    <tr><td>${provChip(r.prov)}</td><td>${r.concept}</td>
+    <td class="num">${fmt(r.qty)}</td>
+    <td class="num">${fmtD(r.unit)}</td>
+    <td class="num" style="font-weight:600">$${fmt(r.total,2)}</td></tr>`).join('');
+}
+
+function renderCostCharts() {
+  const fixedByProv = {};
+  const varByProv = {};
+  BASE.providers.forEach(p=>{ fixedByProv[p.name]=0; varByProv[p.name]=0; });
+  BASE.monthlyFixed.forEach(r=>{ fixedByProv[r.prov]=(fixedByProv[r.prov]||0)+r.total; });
+  BASE.monthlyVar.forEach(r=>{ varByProv[r.prov]=(varByProv[r.prov]||0)+r.total; });
+
+  const names = BASE.providers.map(p=>p.name);
+  const colorMap = ['rgba(239,68,68,0.8)','rgba(245,158,11,0.8)','rgba(16,185,129,0.8)','rgba(167,139,250,0.8)','rgba(59,130,246,0.8)','rgba(20,184,166,0.8)'];
+
+  destroyChart('chartMonthlyFixed');
+  charts['chartMonthlyFixed'] = new Chart(document.getElementById('chartMonthlyFixed'), {
+    type:'doughnut',
+    data:{ labels:names, datasets:[{data:names.map(n=>fixedByProv[n]||0), backgroundColor:colorMap, borderWidth:2, borderColor:'#0a1628'}] },
+    options:{ responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{position:'bottom',labels:{color:'#94a3b8',font:{size:11}}}, tooltip:{callbacks:{label:c=>c.label+': $'+fmt(c.raw)}} } }
+  });
+
+  destroyChart('chartMonthlyVar');
+  charts['chartMonthlyVar'] = new Chart(document.getElementById('chartMonthlyVar'), {
+    type:'doughnut',
+    data:{ labels:names, datasets:[{data:names.map(n=>varByProv[n]||0), backgroundColor:colorMap, borderWidth:2, borderColor:'#0a1628'}] },
+    options:{ responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{position:'bottom',labels:{color:'#94a3b8',font:{size:11}}}, tooltip:{callbacks:{label:c=>c.label+': $'+fmt(c.raw)}} } }
+  });
+}
+
+// ═══════════════════════════════════════════════
+//  EXCEL UPLOAD
+// ═══════════════════════════════════════════════
+function handleUpload(e) {
+  const file = e.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = evt => {
+    try {
+      const wb = XLSX.read(evt.target.result, {type:'array'});
+      document.getElementById('uploadBanner').innerHTML =
+        `✅ Datos cargados desde: <span>${file.name}</span>. Los gráficos reflejan el archivo cargado.`;
+      // You can extend this to parse and update BASE with wb data
+    } catch(err) {
+      document.getElementById('uploadBanner').innerHTML = `⚠️ Error al leer el archivo: ${err.message}`;
+    }
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+// ═══════════════════════════════════════════════
+//  INIT
+// ═══════════════════════════════════════════════
+function init() {
+  renderSummary();
+  renderCashflow();
+  renderVolumeTable();
+  renderSensControls();
+  renderQualitative();
+  renderCosts();
+  // Initial charts for active tab
+  setTimeout(()=>{ renderSummaryCharts(); }, 100);
+}
+
+document.addEventListener('DOMContentLoaded', init);
+</script>
+</body>
+</html>
