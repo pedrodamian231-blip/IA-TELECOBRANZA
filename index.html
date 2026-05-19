@@ -326,7 +326,50 @@
     .qual-grid { grid-template-columns: 120px repeat(5,1fr); font-size: 0.68rem; }
   }
 
-  /* ─── BADGE ROW ─── */
+  /* ─── CASHFLOW PARAMS ─── */
+  .cf-params-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 1rem;
+    margin-bottom: 0.5rem;
+  }
+  .cf-param-item { display: flex; flex-direction: column; gap: 0.4rem; }
+  .cf-param-item label {
+    font-size: 0.7rem; color: var(--muted);
+    text-transform: uppercase; letter-spacing: 1px;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .cf-param-val { font-weight: 700; color: var(--text); font-size: 0.85rem; }
+  .cf-base-tag {
+    font-size: 0.62rem; background: rgba(245,158,11,0.18); color: var(--gold2);
+    padding: 1px 7px; border-radius: 12px; font-weight: 700;
+  }
+  .cf-changed-tag {
+    font-size: 0.62rem; background: rgba(239,68,68,0.18); color: #f87171;
+    padding: 1px 7px; border-radius: 12px; font-weight: 700; display: none;
+  }
+  .prov-btn {
+    padding: 0.45rem 1rem; border-radius: 20px; font-size: 0.76rem; font-weight: 700;
+    cursor: pointer; border: 2px solid transparent; transition: all .2s;
+    background: rgba(255,255,255,0.06); color: var(--muted);
+  }
+  .prov-btn:hover { background: rgba(255,255,255,0.12); color: var(--text); }
+  .prov-btn.active-prov { border-color: var(--accent); color: var(--white); background: rgba(37,99,235,0.18); }
+  .prov-btn.prov-evoltis.active-prov   { border-color:#f87171; color:#f87171; background:rgba(239,68,68,0.12); }
+  .prov-btn.prov-bircle.active-prov    { border-color:#fbbf24; color:#fbbf24; background:rgba(245,158,11,0.12); }
+  .prov-btn.prov-teleprom.active-prov  { border-color:#34d399; color:#34d399; background:rgba(16,185,129,0.12); }
+  .prov-btn.prov-quabund.active-prov   { border-color:#a78bfa; color:#a78bfa; background:rgba(167,139,250,0.12); }
+  .prov-btn.prov-thinkchat.active-prov { border-color:#93c5fd; color:#93c5fd; background:rgba(59,130,246,0.12); }
+  .prov-btn.prov-thinkchatsi.active-prov { border-color:#5eead4; color:#5eead4; background:rgba(20,184,166,0.12); }
+  .cf-row-base td  { }
+  .cf-row-changed td.num { color: #f87171; font-weight: 700; }
+  .cf-total-row { background: rgba(37,99,235,0.1); font-weight: 700; }
+  .cf-total-row td { color: var(--sky); }
+  .delta-pos { color: #f87171; font-weight: 700; }
+  .delta-neg { color: #34d399; font-weight: 700; }
+  .delta-zero { color: var(--muted); }
+
+
   .badge-row { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 0.5rem; }
 
   .divider { height: 1px; background: var(--border); margin: 1.5rem 0; }
@@ -452,14 +495,47 @@
 
   <!-- ════ PANE: CASHFLOW ════ -->
   <div class="pane" id="pane-cashflow">
+
+    <!-- PARAMETERS PANEL -->
+    <div class="card" id="cfParamsCard">
+      <div class="card-title"><span class="icon">🎛</span> Parámetros del Flujo de Caja</div>
+      <p style="font-size:0.78rem;color:var(--muted);margin-bottom:1.25rem">
+        Seleccione el proveedor y ajuste los parámetros. Los valores <span style="color:var(--gold2);font-weight:700">dorados</span> = caso base; <span style="color:#f87171;font-weight:700">rojos</span> = modificado.
+      </p>
+
+      <!-- Provider selector -->
+      <div style="margin-bottom:1.5rem">
+        <div class="section-label">Proveedor</div>
+        <div id="cfProviderBtns" style="display:flex;gap:0.5rem;flex-wrap:wrap"></div>
+      </div>
+
+      <!-- Parameter sliders grid -->
+      <div class="section-label">Parámetros de Volumen</div>
+      <div class="cf-params-grid" id="cfParamsGrid"></div>
+
+      <div style="display:flex;gap:0.75rem;margin-top:1.25rem;flex-wrap:wrap;align-items:center">
+        <button class="btn btn-gold" onclick="resetCfParams()">↺ Restaurar Caso Base</button>
+        <div id="cfChangeIndicator" style="font-size:0.75rem;color:var(--muted)"></div>
+      </div>
+    </div>
+
+    <!-- KPI summary row -->
+    <div class="kpi-row" id="cfKpiRow" style="margin-bottom:1.5rem"></div>
+
+    <!-- Cashflow table -->
     <div class="card">
-      <div class="card-title"><span class="icon">💰</span> Flujo de Caja Proyectado – Teleprom (Caso Base)</div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;flex-wrap:wrap;gap:0.75rem">
+        <div class="card-title" style="margin-bottom:0"><span class="icon">💰</span> Flujo de Caja Proyectado – <span id="cfProvTitle" style="color:var(--gold2)">Teleprom</span></div>
+        <div style="display:flex;gap:0.5rem">
+          <span id="cfBaseIndicator" style="font-size:0.72rem;background:rgba(245,158,11,0.15);color:var(--gold2);padding:3px 10px;border-radius:20px;font-weight:700;display:none">⚡ Escenario modificado</span>
+        </div>
+      </div>
       <div class="table-wrap">
         <table>
           <thead>
             <tr>
               <th>Concepto</th>
-              <th class="num">Costo Unit.</th>
+              <th class="num">Tarifa Unit.</th>
               <th class="num">Año 0 ($)</th>
               <th class="num">Año 1 ($)</th>
               <th class="num">Año 2 ($)</th>
@@ -469,28 +545,48 @@
               <th class="num">Total ($)</th>
             </tr>
           </thead>
-          <tbody id="tbodyCashflowTele"></tbody>
+          <tbody id="tbodyCashflowDyn"></tbody>
         </table>
       </div>
     </div>
 
+    <!-- Charts row -->
     <div class="grid-2">
       <div class="card">
-        <div class="card-title"><span class="icon">📊</span> Flujo Anual Todos los Proveedores</div>
+        <div class="card-title"><span class="icon">📊</span> Evolución Acumulada del Costo</div>
+        <div class="chart-container" style="height:320px">
+          <canvas id="chartCfCumul"></canvas>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title"><span class="icon">📈</span> Costo Anual – Todos los Proveedores</div>
         <div class="chart-container" style="height:320px">
           <canvas id="chartFlowAll"></canvas>
         </div>
       </div>
-      <div class="card">
-        <div class="card-title"><span class="icon">🔢</span> Supuestos del Modelo</div>
-        <div class="table-wrap">
-          <table id="tableAssumptions">
-            <thead><tr><th>Parámetro</th><th class="num">Valor</th></tr></thead>
-            <tbody id="tbodyAssumptions"></tbody>
-          </table>
-        </div>
+    </div>
+
+    <!-- Comparison table base vs scenario -->
+    <div class="card" id="cfCompareCard">
+      <div class="card-title"><span class="icon">⚖️</span> Comparativo Caso Base vs. Escenario Sensibilizado</div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Concepto</th>
+              <th class="num">Base Año 1 ($)</th>
+              <th class="num">Escenario Año 1 ($)</th>
+              <th class="num">Δ Monto</th>
+              <th class="num">Δ %</th>
+              <th class="num">Base Total 5A ($)</th>
+              <th class="num">Escenario Total 5A ($)</th>
+            </tr>
+          </thead>
+          <tbody id="tbodyCfCompare"></tbody>
+        </table>
       </div>
     </div>
+
   </div>
 
   <!-- ════ PANE: CHART ════ -->
@@ -817,7 +913,7 @@ function switchTab(id) {
 
 function renderTabCharts(id) {
   if(id==='summary')     { renderSummaryCharts(); }
-  if(id==='cashflow')    { renderCashflowCharts(); }
+  if(id==='cashflow')    { renderCashflowCharts(); renderCfKpis(); renderCfTable(); renderCfCompareTable(); }
   if(id==='chart')       { renderVolumeChart(); }
   if(id==='sensitivity') { renderSensCharts(); }
   if(id==='qualitative') { renderRadarChart(); }
@@ -915,75 +1011,379 @@ function renderSummaryCharts() {
 }
 
 // ═══════════════════════════════════════════════
-//  CASHFLOW PANE
+//  CASHFLOW ENGINE – Dynamic per provider + params
 // ═══════════════════════════════════════════════
-function renderCashflow() {
-  // Assumptions
-  const tbody = document.getElementById('tbodyAssumptions');
-  const ass = BASE.assumptions;
-  tbody.innerHTML = [
-    ['Cantidad de Clientes', fmt(ass.clientes)],
-    ['Mensajes por chat por cliente', ass.msjPorCliente],
-    ['Total mensajes / mes', fmt(ass.totalMensajes)],
-    ['Mensajes entrantes / mes', fmt(ass.msjEntranteMes)],
-    ['Agentes Telecobranzas', ass.agentesTeleo],
-    ['Agentes Televentas', ass.agentesTV],
-    ['Tasa de descuento (VPN)', (ass.tasa*100).toFixed(0)+'%'],
-  ].map(([k,v])=>`<tr><td>${k}</td><td class="num">${v}</td></tr>`).join('');
 
-  // Teleprom cashflow
-  const tBody = document.getElementById('tbodyCashflowTele');
-  const cf = BASE.cashflow.teleprom;
-  tBody.innerHTML = cf.map(r=>`
-    <tr>
-      <td>${r.concept}</td>
-      <td class="num">${fmtD(r.unit)}</td>
-      <td class="num">${r.yr0?fmt(r.yr0,2):'-'}</td>
-      <td class="num">${r.yr1?fmt(r.yr1,2):'-'}</td>
-      <td class="num">${r.yr2?fmt(r.yr2,2):'-'}</td>
-      <td class="num">${r.yr3?fmt(r.yr3,2):'-'}</td>
-      <td class="num">${r.yr4?fmt(r.yr4,2):'-'}</td>
-      <td class="num">${r.yr5?fmt(r.yr5,2):'-'}</td>
-      <td class="num" style="font-weight:600;color:var(--sky)">${fmt(r.total,2)}</td>
-    </tr>`).join('');
-  // Totals row
-  const totals = [0,1,2,3,4,5].map(yr=>{
-    const k = 'yr'+yr;
-    return cf.reduce((s,r)=>s+(r[k]||0),0);
+// CF state
+const CF_BASE_PARAMS = {
+  clientes: 70000, msjPorCliente: 5, totalMensajes: 350000,
+  msjEntranteMes: 3000, agentes: 66, agentesTV: 130, tasa: 10, horizonte: 5
+};
+let cfParams = { ...CF_BASE_PARAMS };
+let cfProvider = 'Teleprom';
+
+// Provider color map
+const PROV_COLOR = {
+  'Evoltis':'rgba(239,68,68,0.85)', 'Bircle':'rgba(245,158,11,0.85)',
+  'Teleprom':'rgba(16,185,129,0.85)', 'Quabund':'rgba(167,139,250,0.85)',
+  'Thinkchat':'rgba(59,130,246,0.85)', 'Thinkchat Sin IA':'rgba(20,184,166,0.85)'
+};
+const PROV_CHIP_CLASS = {
+  'Evoltis':'prov-evoltis','Bircle':'prov-bircle','Teleprom':'prov-teleprom',
+  'Quabund':'prov-quabund','Thinkchat':'prov-thinkchat','Thinkchat Sin IA':'prov-thinkchatsi'
+};
+
+// Build cashflow lines dynamically for any provider given current cfParams
+function buildCfLines(provName, params) {
+  const p = BASE.providers.find(x=>x.name===provName);
+  if(!p) return [];
+  const { totalMensajes: msgs, msjEntranteMes: ent, agentes: ag, tasa, horizonte: hz } = params;
+
+  // Each line: { concept, unit, yr0, recurring (annual), isVar }
+  const lines = [];
+
+  // ─ IMPL (year 0 only)
+  if(p.impl > 0)
+    lines.push({ concept:'Implementación y Entrenamiento', unit: p.impl, yr0: p.impl, recurring: 0, isVar: false });
+
+  // ─ SOPORTE MENSUAL
+  if(p.soporte > 0)
+    lines.push({ concept:'Soporte y Mantenimiento', unit: p.soporte+'/mes', yr0: 0, recurring: p.soporte*12, isVar: false });
+
+  // ─ MÓDULO IA por conversación
+  const convPerYear = msgs * 12;
+  if(p.modIA > 0) {
+    const iaLine = { concept:'Módulo IA por Conversación', unit: p.modIA+'/conv', yr0: 0, recurring: p.modIA * convPerYear, isVar: true };
+    if(provName==='Quabund') { iaLine.concept='Módulo IA (est. 20% conv.)'; iaLine.recurring = p.modIA * convPerYear * 0.20; }
+    if(provName==='Thinkchat') { iaLine.concept='Módulo IA WhatsApp (est. 20%)'; iaLine.recurring = p.modIA * convPerYear * 0.20; }
+    if(provName==='Thinkchat Sin IA') { iaLine.concept='Módulo IA por Conversación'; iaLine.recurring = 0.042 * convPerYear * 0.20; }
+    lines.push(iaLine);
+  }
+
+  // ─ MSJ META UTILIDAD
+  const msjYr = msgs * 12;
+  if(provName !== 'Quabund') {
+    const metaAmt = 0.0113 * msjYr;
+    if(metaAmt > 0)
+      lines.push({ concept:'Mensajes Meta (Utilidad)', unit:'0.0113/msj', yr0:0, recurring: metaAmt, isVar: true });
+  } else {
+    lines.push({ concept:'Mensajes Meta (Utilidad)', unit:'0.0113/msj', yr0:0, recurring: 0.0113 * msjYr, isVar: true });
+  }
+
+  // ─ USO IA POR MSJ (Thinkchat Sin IA only)
+  if(provName==='Thinkchat Sin IA' && p.msjUtil && p.msjUtil > 0) {
+    lines.push({ concept:'Uso IA por Mensaje', unit: p.msjUtil+'/msj', yr0:0, recurring: p.msjUtil * msjYr * 0.20, isVar: true });
+  }
+
+  // ─ LICENCIA POR AGENTE
+  if(p.licencia > 0)
+    lines.push({ concept:'Licencia por Agente', unit: p.licencia+'/ag/mes', yr0:0, recurring: p.licencia * ag * 12, isVar: false });
+
+  // ─ MENSAJE ENTRANTE
+  if(p.mensajeEntrant > 0)
+    lines.push({ concept:'Costo Mensaje Entrante', unit: p.mensajeEntrant+'/msj', yr0:0, recurring: p.mensajeEntrant * ent * 12, isVar: true });
+
+  // ─ COSTO POR SALIR (Teleprom only – Thinkchat exit)
+  if(provName==='Teleprom')
+    lines.push({ concept:'Costo Salida Thinkchat (66 ag × $5)', unit:'5/ag', yr0:0, recurring: 5 * ag * 12, isVar: false });
+
+  // Compute yearly values
+  return lines.map(l => {
+    const years = {};
+    for(let y=0; y<=hz; y++) {
+      years['yr'+y] = y===0 ? l.yr0 : l.recurring;
+    }
+    const total = l.yr0 + l.recurring * hz;
+    return { ...l, ...years, total };
   });
-  tBody.innerHTML += `<tr style="background:rgba(37,99,235,0.12);font-weight:700;color:var(--sky)">
-    <td colspan="2">TOTAL</td>
-    ${totals.map(t=>`<td class="num">${fmt(t,2)}</td>`).join('')}
-    <td class="num">${fmt(totals.reduce((a,b)=>a+b,0),2)}</td>
+}
+
+// Compute NPV given cashflows by year
+function calcNPV(lines, tasa, hz) {
+  const rate = tasa / 100;
+  let npv = 0;
+  for(let y=0; y<=hz; y++) {
+    const annual = lines.reduce((s,l) => s + (l['yr'+y]||0), 0);
+    npv += annual / Math.pow(1+rate, y);
+  }
+  return npv;
+}
+
+// Render everything in cashflow pane
+function renderCashflow() {
+  renderCfProviderBtns();
+  renderCfParamsGrid();
+  renderCfKpis();
+  renderCfTable();
+  renderCfCompareTable();
+}
+
+function renderCfProviderBtns() {
+  const el = document.getElementById('cfProviderBtns');
+  el.innerHTML = BASE.providers.map(p=>`
+    <button class="prov-btn ${PROV_CHIP_CLASS[p.name]||''} ${p.name===cfProvider?'active-prov':''}"
+            onclick="selectCfProvider('${p.name}')">${p.name}</button>`).join('');
+}
+
+function selectCfProvider(name) {
+  cfProvider = name;
+  renderCfProviderBtns();
+  document.getElementById('cfProvTitle').textContent = name;
+  renderCfKpis();
+  renderCfTable();
+  renderCfCompareTable();
+  renderCashflowCharts();
+}
+
+// Slider parameter definitions
+const CF_PARAM_DEFS = [
+  { key:'clientes',       label:'Cantidad de Clientes',       min:10000, max:200000, step:5000,  base:70000,  unit:'',   decimals:0 },
+  { key:'msjPorCliente',  label:'Mensajes por Cliente / mes', min:1,     max:20,     step:1,     base:5,      unit:'',   decimals:0 },
+  { key:'totalMensajes',  label:'Total Mensajes / mes',       min:50000, max:700000, step:10000, base:350000, unit:'',   decimals:0 },
+  { key:'msjEntranteMes', label:'Mensajes Entrantes / mes',   min:500,   max:15000,  step:250,   base:3000,   unit:'',   decimals:0 },
+  { key:'agentes',        label:'Agentes Telecobranzas',      min:20,    max:250,    step:5,     base:66,     unit:'',   decimals:0 },
+  { key:'tasa',           label:'Tasa de Descuento (%)',      min:1,     max:30,     step:0.5,   base:10,     unit:'%',  decimals:1 },
+  { key:'horizonte',      label:'Horizonte (años)',           min:1,     max:10,     step:1,     base:5,      unit:'a',  decimals:0 },
+];
+
+function renderCfParamsGrid() {
+  const el = document.getElementById('cfParamsGrid');
+  el.innerHTML = CF_PARAM_DEFS.map(d=>{
+    const val = cfParams[d.key];
+    const changed = val !== d.base;
+    return `
+    <div class="cf-param-item">
+      <label>
+        ${d.label}
+        <span class="cf-base-tag" id="cfbtag-${d.key}" style="${changed?'display:none':''}">BASE: ${fmt(d.base,d.decimals)}${d.unit}</span>
+        <span class="cf-changed-tag" id="cfctag-${d.key}" style="${changed?'display:inline':'display:none'}">≠ BASE</span>
+      </label>
+      <div style="display:flex;align-items:center;gap:0.6rem">
+        <input type="range" min="${d.min}" max="${d.max}" step="${d.step}" value="${val}"
+               id="cfrng-${d.key}" oninput="updateCfParam('${d.key}', this.value, ${d.base}, ${d.decimals}, '${d.unit}')">
+        <span class="cf-param-val" id="cfval-${d.key}" style="min-width:60px;text-align:right">${fmt(val,d.decimals)}${d.unit}</span>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function updateCfParam(key, val, base, decimals, unit) {
+  cfParams[key] = parseFloat(val);
+  document.getElementById('cfval-'+key).textContent = fmt(cfParams[key], decimals) + unit;
+  const changed = cfParams[key] !== base;
+  document.getElementById('cfbtag-'+key).style.display = changed ? 'none' : 'inline';
+  document.getElementById('cfctag-'+key).style.display = changed ? 'inline' : 'none';
+
+  // Check if any param changed from base
+  const anyChanged = CF_PARAM_DEFS.some(d => cfParams[d.key] !== d.base);
+  document.getElementById('cfBaseIndicator').style.display = anyChanged ? 'inline' : 'none';
+  document.getElementById('cfChangeIndicator').textContent = anyChanged ?
+    `${CF_PARAM_DEFS.filter(d=>cfParams[d.key]!==d.base).length} parámetro(s) modificado(s)` : '';
+
+  renderCfKpis();
+  renderCfTable();
+  renderCfCompareTable();
+  renderCashflowCharts();
+}
+
+function resetCfParams() {
+  cfParams = { ...CF_BASE_PARAMS };
+  CF_PARAM_DEFS.forEach(d => {
+    const rng = document.getElementById('cfrng-'+d.key);
+    if(rng) rng.value = d.base;
+    const vl = document.getElementById('cfval-'+d.key);
+    if(vl) vl.textContent = fmt(d.base, d.decimals) + d.unit;
+    const bt = document.getElementById('cfbtag-'+d.key);
+    if(bt) bt.style.display = 'inline';
+    const ct = document.getElementById('cfctag-'+d.key);
+    if(ct) ct.style.display = 'none';
+  });
+  document.getElementById('cfBaseIndicator').style.display = 'none';
+  document.getElementById('cfChangeIndicator').textContent = '';
+  renderCfKpis();
+  renderCfTable();
+  renderCfCompareTable();
+  renderCashflowCharts();
+}
+
+function renderCfKpis() {
+  const p = BASE.providers.find(x=>x.name===cfProvider);
+  if(!p) return;
+  const lines = buildCfLines(cfProvider, cfParams);
+  const hz = cfParams.horizonte;
+  const totalNominal = lines.reduce((s,l)=>s+l.total, 0);
+  const npv = calcNPV(lines, cfParams.tasa, hz);
+  const avgAnnual = (totalNominal - (lines.find(l=>l.yr0>0)||{}).yr0||0) / hz;
+  const monthly = lines.reduce((s,l)=>s+(l.recurring||0)/12, 0);
+
+  // Base comparison
+  const baseLines = buildCfLines(cfProvider, CF_BASE_PARAMS);
+  const baseTotalNominal = baseLines.reduce((s,l)=>s+l.total, 0);
+  const delta = totalNominal - baseTotalNominal;
+  const deltaSign = delta>=0 ? '+' : '';
+  const deltaCls = delta>0 ? 'badge-red' : delta<0 ? 'badge-green' : 'badge-gold';
+
+  const el = document.getElementById('cfKpiRow');
+  el.innerHTML = [
+    { label:'Costo Total Nominal', val:'$'+fmt(totalNominal,0), sub:'Horizonte '+hz+' años', cls:'' },
+    { label:'Valor Presente Neto',  val:'$'+fmt(npv,0),          sub:'Tasa '+cfParams.tasa+'%', cls:'' },
+    { label:'Costo Anual Prom.',    val:'$'+fmt(avgAnnual,0),    sub:'Sin año 0', cls:'' },
+    { label:'Costo Mensual Est.',   val:'$'+fmt(monthly,0),      sub:'Promedio recurrente', cls:'' },
+    { label:'vs. Caso Base',        val:deltaSign+'$'+fmt(Math.abs(delta),0), sub:'Variación total '+hz+'a', cls: delta>0?'red':delta<0?'green':'' },
+  ].map(k=>`<div class="kpi-card ${k.cls}">
+    <div class="kpi-label">${k.label}</div>
+    <div class="kpi-value" style="font-size:1.35rem">${k.val}</div>
+    <div class="kpi-sub">${k.sub}</div>
+  </div>`).join('');
+}
+
+function renderCfTable() {
+  const lines = buildCfLines(cfProvider, cfParams);
+  const baseLines = buildCfLines(cfProvider, CF_BASE_PARAMS);
+  const hz = cfParams.horizonte;
+
+  // Build base map for change detection
+  const baseMap = {};
+  baseLines.forEach(l=>{ baseMap[l.concept] = l; });
+
+  const tbody = document.getElementById('tbodyCashflowDyn');
+  // Year columns: 0 to hz
+  const yrCols = Array.from({length: hz+1}, (_,i)=>i);
+
+  tbody.innerHTML = lines.map(l=>{
+    const bl = baseMap[l.concept];
+    const unitChanged = bl && JSON.stringify(l.unit) !== JSON.stringify(bl.unit);
+    const yrCells = yrCols.map(y=>{
+      const v = l['yr'+y]||0;
+      const bv = bl ? (bl['yr'+y]||0) : v;
+      const chg = Math.abs(v-bv) > 0.01;
+      if(v===0 && bv===0) return `<td class="num" style="color:var(--muted)">-</td>`;
+      return `<td class="num ${chg?'delta-pos':''}">${fmt(v,0)}</td>`;
+    }).join('');
+    const totalChg = bl && Math.abs(l.total - bl.total) > 0.01;
+    return `<tr>
+      <td>${l.concept} <span style="font-size:0.68rem;color:${l.isVar?'#60a5fa':'#94a3b8'}">${l.isVar?'● var':'○ fijo'}</span></td>
+      <td class="num" style="font-size:0.75rem;color:var(--muted)">${l.unit}</td>
+      ${yrCells}
+      <td class="num" style="font-weight:700;color:${totalChg?'#f87171':'var(--sky)'}">${fmt(l.total,0)}</td>
+    </tr>`;
+  }).join('');
+
+  // Totals row
+  const totals = yrCols.map(y => lines.reduce((s,l)=>s+(l['yr'+y]||0),0));
+  const grandTotal = lines.reduce((s,l)=>s+l.total, 0);
+  tbody.innerHTML += `<tr class="cf-total-row">
+    <td colspan="2" style="font-family:'Bebas Neue',sans-serif;letter-spacing:1px">TOTAL ACUMULADO</td>
+    ${totals.map(t=>`<td class="num">$${fmt(t,0)}</td>`).join('')}
+    <td class="num">$${fmt(grandTotal,0)}</td>
+  </tr>`;
+
+  // NPV row
+  const npv = calcNPV(lines, cfParams.tasa, hz);
+  tbody.innerHTML += `<tr style="background:rgba(16,185,129,0.07)">
+    <td colspan="${2+hz+1}" style="font-size:0.75rem;color:var(--muted)">Valor Presente Neto (tasa ${cfParams.tasa}%)</td>
+    <td class="num" style="font-weight:700;color:#34d399">$${fmt(npv,0)}</td>
+  </tr>`;
+
+  // Update header
+  const yrHeaders = yrCols.map(y=>`<th class="num">Año ${y} ($)</th>`).join('');
+  const table = tbody.closest('table');
+  table.querySelector('thead tr').innerHTML =
+    `<th>Concepto</th><th class="num">Tarifa Unit.</th>${yrHeaders}<th class="num">Total ($)</th>`;
+}
+
+function renderCfCompareTable() {
+  const lines = buildCfLines(cfProvider, cfParams);
+  const baseLines = buildCfLines(cfProvider, CF_BASE_PARAMS);
+  const hz = cfParams.horizonte;
+  const baseHzLines = buildCfLines(cfProvider, {...CF_BASE_PARAMS, horizonte: hz});
+
+  const allConcepts = [...new Set([...baseHzLines.map(l=>l.concept), ...lines.map(l=>l.concept)])];
+  const tbody = document.getElementById('tbodyCfCompare');
+
+  tbody.innerHTML = allConcepts.map(c=>{
+    const bl = baseHzLines.find(l=>l.concept===c);
+    const sl = lines.find(l=>l.concept===c);
+    const bYr1 = bl ? (bl.yr1||0) : 0;
+    const sYr1 = sl ? (sl.yr1||0) : 0;
+    const bTotal = bl ? bl.total : 0;
+    const sTotal = sl ? sl.total : 0;
+    const deltaAmt = sYr1 - bYr1;
+    const deltaTot = sTotal - bTotal;
+    const deltaPct = bYr1!==0 ? (deltaAmt/bYr1*100) : (sYr1!==0 ? 100 : 0);
+    const noChange = Math.abs(deltaAmt) < 0.01;
+    const deltaCls = deltaAmt>0.01?'delta-pos':deltaAmt<-0.01?'delta-neg':'delta-zero';
+    return `<tr>
+      <td>${c}</td>
+      <td class="num">${bYr1 ? '$'+fmt(bYr1,0) : '-'}</td>
+      <td class="num ${noChange?'':'changed-cell'}">${sYr1 ? '$'+fmt(sYr1,0) : '-'}</td>
+      <td class="num ${deltaCls}">${noChange?'-':(deltaAmt>0?'+':'')+('$'+fmt(deltaAmt,0))}</td>
+      <td class="num ${deltaCls}">${noChange?'-':((deltaAmt>0?'+':'')+deltaPct.toFixed(1)+'%')}</td>
+      <td class="num">${bTotal ? '$'+fmt(bTotal,0) : '-'}</td>
+      <td class="num ${Math.abs(deltaTot)>0.01?'changed-cell':''}">${sTotal ? '$'+fmt(sTotal,0) : '-'}</td>
+    </tr>`;
+  }).join('');
+
+  // Summary row
+  const bGrand = baseHzLines.reduce((s,l)=>s+l.total,0);
+  const sGrand = lines.reduce((s,l)=>s+l.total,0);
+  const diff = sGrand - bGrand;
+  const diffCls = diff>0.01?'delta-pos':diff<-0.01?'delta-neg':'delta-zero';
+  tbody.innerHTML += `<tr class="cf-total-row">
+    <td>TOTAL</td>
+    <td class="num">-</td><td class="num">-</td><td class="num">-</td><td class="num">-</td>
+    <td class="num">$${fmt(bGrand,0)}</td>
+    <td class="num ${diffCls}">$${fmt(sGrand,0)} <span style="font-size:0.7rem">(${diff>=0?'+':''}${fmt(diff,0)})</span></td>
   </tr>`;
 }
 
 function renderCashflowCharts() {
-  const years = ['Año 1','Año 2','Año 3','Año 4','Año 5'];
-  const annual5 = BASE.providers.map(p => {
-    const yr = (p.total5yr - p.impl) / 5;
-    return { name:p.name, vals: years.map(()=>yr) };
-  });
-  const colorMap = {
-    'Evoltis':'rgba(239,68,68,0.75)','Bircle':'rgba(245,158,11,0.75)',
-    'Teleprom':'rgba(16,185,129,0.75)','Quabund':'rgba(167,139,250,0.75)',
-    'Thinkchat':'rgba(59,130,246,0.75)','Thinkchat Sin IA':'rgba(20,184,166,0.75)'
-  };
+  const hz = cfParams.horizonte;
+  const years = Array.from({length:hz}, (_,i)=>'Año '+(i+1));
 
-  destroyChart('chartFlowAll');
-  charts['chartFlowAll'] = new Chart(document.getElementById('chartFlowAll'), {
+  // Cumulative cost chart for selected provider (base vs scenario)
+  const baseLines = buildCfLines(cfProvider, CF_BASE_PARAMS);
+  const scenLines = buildCfLines(cfProvider, cfParams);
+
+  let baseCumul = 0, scenCumul = 0;
+  const baseData = [], scenData = [];
+  for(let y=0; y<=hz; y++) {
+    baseCumul += baseLines.reduce((s,l)=>s+(l['yr'+y]||0),0);
+    scenCumul += scenLines.reduce((s,l)=>s+(l['yr'+y]||0),0);
+    if(y>0) { baseData.push(baseCumul); scenData.push(scenCumul); }
+  }
+
+  destroyChart('chartCfCumul');
+  charts['chartCfCumul'] = new Chart(document.getElementById('chartCfCumul'), {
     type:'line',
     data:{ labels:years,
-      datasets: annual5.map(p=>({
-        label:p.name, data:p.vals.map((_,i)=>p.vals[i]),
-        borderColor:colorMap[p.name]||'#94a3b8', backgroundColor:'transparent',
-        borderWidth:2, pointRadius:4, tension:0
-      }))
+      datasets:[
+        { label:'Caso Base', data:baseData, borderColor:'rgba(245,158,11,0.9)', backgroundColor:'rgba(245,158,11,0.08)', borderWidth:2, pointRadius:4, fill:true, tension:0.2, borderDash:[6,3] },
+        { label:'Escenario', data:scenData, borderColor:PROV_COLOR[cfProvider]||'#3b82f6', backgroundColor:(PROV_COLOR[cfProvider]||'rgba(59,130,246,0.85)').replace('0.85','0.08'), borderWidth:3, pointRadius:5, fill:true, tension:0.2 },
+      ]
     },
     options:{ responsive:true, maintainAspectRatio:false,
-      plugins:{ legend:{labels:{color:'#94a3b8',font:{size:11}}}, tooltip:{callbacks:{label:c=>c.dataset.label+': $'+fmt(c.raw)}} },
+      plugins:{ legend:{labels:{color:'#94a3b8'}}, tooltip:{callbacks:{label:c=>c.dataset.label+': $'+fmt(c.raw)}} },
       scales:{ y:{ticks:{callback:v=>'$'+fmt(v),color:'#94a3b8'},grid:{color:'rgba(255,255,255,0.05)'}},
                x:{ticks:{color:'#94a3b8'},grid:{display:false}} } }
+  });
+
+  // All-providers annual cost using current params
+  destroyChart('chartFlowAll');
+  const provAnnualData = BASE.providers.map(p=>{
+    const ls = buildCfLines(p.name, cfParams);
+    return ls.reduce((s,l)=>s+(l.recurring||0),0);
+  });
+  const barColors = BASE.providers.map(p=>PROV_COLOR[p.name]||'#94a3b8');
+  charts['chartFlowAll'] = new Chart(document.getElementById('chartFlowAll'), {
+    type:'bar', indexAxis:'y',
+    data:{ labels:BASE.providers.map(p=>p.name),
+      datasets:[{label:'Costo Anual Recurrente ($)', data:provAnnualData, backgroundColor:barColors, borderRadius:6, borderSkipped:false}]
+    },
+    options:{ responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{display:false}, tooltip:{callbacks:{label:c=>'$'+fmt(c.raw)}} },
+      scales:{ x:{ticks:{callback:v=>'$'+fmt(v),color:'#94a3b8'},grid:{color:'rgba(255,255,255,0.05)'}},
+               y:{ticks:{color:'#94a3b8'},grid:{display:false}} } }
   });
 }
 
