@@ -831,27 +831,26 @@ function updateSlider(key, rawVal) {
   cfSlider[key] = val;
   const isBase = val === CF_SLIDER_BASE[key];
 
-  if(key==='clientes') {
-    document.getElementById('val-clientes').textContent = fmt(val);
-    document.getElementById('val-clientes').classList.toggle('is-changed', !isBase);
-    document.getElementById('tag-base-clientes').classList.toggle('hide', !isBase);
-    document.getElementById('tag-chg-clientes').classList.toggle('show', !isBase);
-    document.getElementById('rng-clientes').style.setProperty('--pct', sliderPct(val,10000,200000));
-  } else {
-    document.getElementById('val-msjxcli').textContent = fmt(val);
-    document.getElementById('val-msjxcli').classList.toggle('is-changed', !isBase);
-    document.getElementById('tag-base-msjxcli').classList.toggle('hide', !isBase);
-    document.getElementById('tag-chg-msjxcli').classList.toggle('show', !isBase);
-    document.getElementById('rng-msjxcli').style.setProperty('--pct', sliderPct(val,1,20));
-  }
+  const cfg = key==='clientes'
+    ? {valId:'val-clientes',  tagB:'tag-base-clientes', tagC:'tag-chg-clientes', rngId:'rng-clientes', min:10000, max:200000}
+    : {valId:'val-msjxcli',   tagB:'tag-base-msjxcli',  tagC:'tag-chg-msjxcli',  rngId:'rng-msjxcli',  min:1,     max:20    };
+
+  const ve = document.getElementById(cfg.valId);
+  if(ve){ ve.textContent=fmt(val); ve.classList.toggle('is-changed',!isBase); }
+  const tb=document.getElementById(cfg.tagB); if(tb) tb.classList.toggle('hide',!isBase);
+  const tc=document.getElementById(cfg.tagC); if(tc) tc.classList.toggle('show',!isBase);
+  const rng=document.getElementById(cfg.rngId);
+  if(rng) rng.style.setProperty('--pct', sliderPct(val, cfg.min, cfg.max));
 
   const totalMsj = derivedMsj(cfSlider);
-  document.getElementById('derived-total-msj').textContent = fmt(totalMsj);
+  const dtm=document.getElementById('derived-total-msj'); if(dtm) dtm.textContent=fmt(totalMsj);
   const anyChanged = cfSlider.clientes!==CF_SLIDER_BASE.clientes || cfSlider.msjxcli!==CF_SLIDER_BASE.msjxcli;
-  document.getElementById('scenario-badge-msj').classList.toggle('show', anyChanged);
-  document.getElementById('scenario-badge-table').classList.toggle('show', anyChanged);
+  const sb1=document.getElementById('scenario-badge-msj');   if(sb1) sb1.classList.toggle('show',anyChanged);
+  const sb2=document.getElementById('scenario-badge-table'); if(sb2) sb2.classList.toggle('show',anyChanged);
 
-  renderCfKpis(); renderCfTable(); renderCashflowCharts();
+  renderCfKpis();
+  renderCfTable();
+  try { renderCashflowCharts(); } catch(e){}
 }
 
 function resetCfSliders() {
@@ -924,48 +923,72 @@ function renderCfTable() {
   const hz = CF_FIXED.horizonte;
   const lines = buildCfLines(cfProvider, msgs, hz);
   const baseLines = buildCfLines(cfProvider, baseMsgs, hz);
-  const bMap = {}; baseLines.forEach(l=>bMap[l.concept]=l);
+  const bMap = {}; baseLines.forEach(l=>{ bMap[l.concept]=l; });
 
-  // Header
   const thead = document.getElementById('cfTableHead');
-  thead.innerHTML = `<th>Concepto</th><th class="num">Tarifa</th>`+
-    Array.from({length:hz+1},(_,y)=>`<th class="num">Año ${y}</th>`).join('')+
-    `<th class="num">Total 5A ($)</th>`;
+  const tbody  = document.getElementById('tbodyCfDyn');
+  if(!thead || !tbody) return; // safety
 
-  const tbody = document.getElementById('tbodyCfDyn');
-  tbody.innerHTML = lines.map(l=>{
+  // Header row
+  let headHtml = '<th>Concepto</th><th class="num" style="font-size:0.68rem">Tarifa Unit.</th>';
+  for(let y=0; y<=hz; y++) headHtml += `<th class="num">Año ${y}</th>`;
+  headHtml += '<th class="num">Total ($)</th>';
+  thead.innerHTML = headHtml;
+
+  // Body rows
+  let bodyHtml = '';
+  for(const l of lines){
     const bl = bMap[l.concept];
-    const yrCells = Array.from({length:hz+1},(_,y)=>{
-      const v = l['yr'+y]||0;
-      const bv = bl?(bl['yr'+y]||0):v;
-      const chg = Math.abs(v-bv)>0.5;
-      if(v===0&&bv===0) return `<td class="num" style="color:var(--muted)">-</td>`;
-      return `<td class="num ${chg?'delta-pos':''}">${fmt(v)}</td>`;
-    }).join('');
-    const totChg = bl&&Math.abs(l.total-bl.total)>0.5;
-    return `<tr class="${l.isVar?'cf-row-var':'cf-row-fixed'}">
+    let yrCells = '';
+    for(let y=0; y<=hz; y++){
+      const v  = l['yr'+y]  || 0;
+      const bv = bl ? (bl['yr'+y]||0) : v;
+      const chg = Math.abs(v - bv) > 0.01;
+      if(v===0 && bv===0){
+        yrCells += '<td class="num" style="color:var(--muted)">–</td>';
+      } else {
+        yrCells += `<td class="num${chg?' delta-pos':''}">${fmt(v)}</td>`;
+      }
+    }
+    const totChg = bl && Math.abs(l.total - bl.total) > 0.01;
+    const rowStyle = l.isVar ? 'cf-row-var' : 'cf-row-fixed';
+    bodyHtml += `<tr class="${rowStyle}">
       <td>${l.concept}</td>
-      <td class="num" style="font-size:0.73rem;color:var(--muted)">${l.unit}</td>
+      <td class="num" style="font-size:0.71rem;color:var(--muted)">${l.unit}</td>
       ${yrCells}
-      <td class="num" style="font-weight:700;color:${totChg?'#fbbf24':'var(--sky)'}">${fmt(l.total)}</td>
+      <td class="num" style="font-weight:700;color:${totChg?'#ffd740':'var(--sky)'}">${fmt(l.total)}</td>
     </tr>`;
-  }).join('');
+  }
 
-  // Total row
-  const totals = Array.from({length:hz+1},(_,y)=>lines.reduce((s,l)=>s+(l['yr'+y]||0),0));
+  // Totals row
+  const totals = [];
+  for(let y=0; y<=hz; y++) totals.push(lines.reduce((s,l)=>s+(l['yr'+y]||0),0));
   const grand = lines.reduce((s,l)=>s+l.total,0);
-  tbody.innerHTML += `<tr class="cf-total-row">
-    <td colspan="2" style="font-family:'Bebas Neue',sans-serif;letter-spacing:1px">TOTAL ACUMULADO</td>
-    ${totals.map(t=>`<td class="num">${fmt(t)}</td>`).join('')}
-    <td class="num">${fmt(grand)}</td>
-  </tr>`;
+  const baseTotals = [];
+  for(let y=0; y<=hz; y++) baseTotals.push(baseLines.reduce((s,l)=>s+(l['yr'+y]||0),0));
+  const baseGrand = baseLines.reduce((s,l)=>s+l.total,0);
+
+  bodyHtml += '<tr class="cf-total-row"><td colspan="2">TOTAL ACUMULADO</td>';
+  for(let y=0; y<=hz; y++){
+    const chg = Math.abs(totals[y]-baseTotals[y])>0.01;
+    bodyHtml += `<td class="num${chg?' delta-pos':''}">${fmt(totals[y])}</td>`;
+  }
+  const grandChg = Math.abs(grand-baseGrand)>0.01;
+  bodyHtml += `<td class="num${grandChg?' delta-pos':''}">${fmt(grand)}</td></tr>`;
 
   // NPV row
   const npv = calcNPV(lines, CF_FIXED.tasa, hz);
-  tbody.innerHTML += `<tr style="background:rgba(22,163,74,0.06)">
-    <td colspan="${2+hz+1}" style="font-size:0.72rem;color:var(--muted)">Valor Presente Neto (tasa ${CF_FIXED.tasa}%)</td>
+  const baseNpv = calcNPV(baseLines, CF_FIXED.tasa, hz);
+  const npvChg = Math.abs(npv-baseNpv)>0.01;
+  bodyHtml += `<tr style="background:rgba(22,163,74,0.06)">
+    <td colspan="${2+hz+1}" style="font-size:0.72rem;color:var(--muted)">
+      VPN (tasa ${CF_FIXED.tasa}%) &nbsp;
+      ${npvChg?`<span style="font-size:0.65rem;background:rgba(245,212,0,0.15);color:#ffd740;padding:1px 8px;border-radius:10px">vs. base: ${grand>=baseGrand?'+':''}${fmt(grand-baseGrand)}</span>`:''}
+    </td>
     <td class="num" style="font-weight:700;color:#4ade80">${fmt(npv)}</td>
   </tr>`;
+
+  tbody.innerHTML = bodyHtml;
 }
 
 // ─ CF Charts
@@ -1308,7 +1331,7 @@ function switchTab(id) {
 }
 function renderTabCharts(id) {
   if(id==='summary')     { renderSummaryCharts(); }
-  if(id==='cashflow')    { renderCashflowCharts(); renderCfKpis(); renderCfTable(); }
+  if(id==='cashflow')    { renderCfKpis(); renderCfTable(); setTimeout(()=>renderCashflowCharts(),50); }
   if(id==='chart')       { renderVolumeChart(); }
   if(id==='sensitivity') { renderSensCharts(); }
   if(id==='qualitative') { renderRadarChart(); }
@@ -1342,13 +1365,15 @@ function init() {
   renderSensControls();
   renderQualitative();
   renderCosts();
+  // Render table immediately (DOM exists even if pane hidden)
+  renderCfKpis();
+  renderCfTable();
   setTimeout(()=>{
     renderSummaryCharts();
-    renderCfKpis(); renderCfTable(); renderCashflowCharts();
-    // Position base markers after DOM layout
+    try { renderCashflowCharts(); } catch(e){}
     positionBaseMarker('rng-clientes','bm-clientes',70000,10000,200000);
     positionBaseMarker('rng-msjxcli','bm-msjxcli',5,1,20);
-  },120);
+  },150);
   window.addEventListener('resize',()=>{
     positionBaseMarker('rng-clientes','bm-clientes',70000,10000,200000);
     positionBaseMarker('rng-msjxcli','bm-msjxcli',5,1,20);
