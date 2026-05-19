@@ -6,650 +6,590 @@
 <title>Inverfin – Dashboard Comparativo Telecobranzas</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --navy: #0a1628;
-    --blue: #1a3a6e;
-    --mid: #1e4d99;
-    --accent: #2563eb;
-    --bright: #3b82f6;
-    --sky: #60a5fa;
-    --ice: #bfdbfe;
-    --gold: #f59e0b;
-    --gold2: #fbbf24;
-    --green: #10b981;
-    --red: #ef4444;
-    --surface: #0f1f3d;
-    --card: #132040;
-    --border: rgba(59,130,246,0.18);
-    --text: #e2e8f0;
-    --muted: #94a3b8;
-    --white: #ffffff;
-    --shadow: 0 8px 40px rgba(0,0,0,0.45);
-  }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  html { scroll-behavior: smooth; }
-  body {
-    background: var(--navy);
-    font-family: 'DM Sans', sans-serif;
-    color: var(--text);
-    min-height: 100vh;
-    overflow-x: hidden;
-  }
+:root {
+  /* Paleta Inverfin: azul marino profundo, rojo institucional, amarillo dorado */
+  --navy:    #05111f;
+  --blue:    #0b2545;
+  --mid:     #1a3c6e;
+  --accent:  #c41e1e;   /* rojo Inverfin */
+  --accent2: #e02020;
+  --yellow:  #f5c200;   /* amarillo Inverfin */
+  --yellow2: #ffd740;
+  --cobalt:  #1e4fa0;   /* azul círculo logo */
+  --sky:     #5b9bd5;
+  --green:   #16a34a;
+  --red:     #dc2626;
+  --surface: #081929;
+  --card:    #0d2137;
+  --card2:   #0f2847;
+  --border:  rgba(245,194,0,0.15);
+  --border2: rgba(30,79,160,0.3);
+  --text:    #e8edf4;
+  --muted:   #7a95b0;
+  --white:   #ffffff;
+  --shadow:  0 8px 40px rgba(0,0,0,0.55);
+}
+* { box-sizing:border-box; margin:0; padding:0; }
+html { scroll-behavior:smooth; }
+body {
+  background: var(--navy);
+  font-family: 'DM Sans', sans-serif;
+  color: var(--text);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
 
-  /* ─── HEADER ─── */
-  .header {
-    background: linear-gradient(135deg, var(--navy) 0%, var(--blue) 60%, #1e3a8a 100%);
-    border-bottom: 2px solid var(--accent);
-    padding: 0 2rem;
-    position: sticky; top: 0; z-index: 100;
-    box-shadow: 0 4px 30px rgba(0,0,0,0.5);
-  }
-  .header-inner {
-    max-width: 1600px; margin: 0 auto;
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 1rem 0;
-    gap: 1.5rem;
-  }
-  .brand { display: flex; align-items: center; gap: 1rem; }
-  .brand-logo {
-    width: 48px; height: 48px;
-    background: linear-gradient(135deg, var(--accent), var(--sky));
-    border-radius: 12px;
-    display: flex; align-items: center; justify-content: center;
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 1.6rem; color: white;
-    box-shadow: 0 4px 16px rgba(37,99,235,0.5);
-    flex-shrink: 0;
-  }
-  .brand-text h1 {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 2rem; letter-spacing: 3px;
-    color: var(--white);
-    line-height: 1;
-  }
-  .brand-text p { font-size: 0.72rem; color: var(--sky); letter-spacing: 2px; text-transform: uppercase; }
+/* ═══ HEADER ═══ */
+.header {
+  background: linear-gradient(135deg, #030e1a 0%, #0b2545 55%, #0f2f60 100%);
+  border-bottom: 3px solid var(--yellow);
+  padding: 0 2rem;
+  position: sticky; top:0; z-index:100;
+  box-shadow: 0 4px 30px rgba(0,0,0,0.6);
+}
+.header-inner {
+  max-width:1600px; margin:0 auto;
+  display:flex; align-items:center; justify-content:space-between;
+  padding:0.75rem 0; gap:1.5rem;
+}
+.brand { display:flex; align-items:center; gap:1.2rem; }
+.brand-logo img { height:52px; width:auto; display:block; filter:drop-shadow(0 2px 8px rgba(0,0,0,0.5)); }
+.brand-sep { width:1px; height:40px; background:rgba(245,194,0,0.25); }
+.brand-text h1 {
+  font-family:'Bebas Neue',sans-serif; font-size:1.25rem; letter-spacing:3px;
+  color:var(--white); line-height:1;
+}
+.brand-text p { font-size:0.65rem; color:var(--yellow2); letter-spacing:2px; text-transform:uppercase; margin-top:2px; }
 
-  .header-kpi {
-    display: flex; gap: 1.5rem; flex-wrap: wrap;
-  }
-  .kpi-chip {
-    background: rgba(37,99,235,0.12);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 0.5rem 1rem;
-    text-align: center;
-    min-width: 110px;
-  }
-  .kpi-chip .kv { font-size: 1.2rem; font-weight: 700; color: var(--gold2); line-height: 1; }
-  .kpi-chip .kl { font-size: 0.65rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-top: 2px; }
+.header-kpi { display:flex; gap:1rem; flex-wrap:wrap; }
+.kpi-chip {
+  background:rgba(30,79,160,0.2);
+  border:1px solid rgba(245,194,0,0.2);
+  border-radius:10px; padding:0.45rem 0.9rem; text-align:center; min-width:100px;
+}
+.kpi-chip .kv { font-size:1.1rem; font-weight:700; color:var(--yellow2); line-height:1; }
+.kpi-chip .kl { font-size:0.6rem; color:var(--muted); text-transform:uppercase; letter-spacing:1px; margin-top:2px; }
 
-  .header-actions { display: flex; gap: 0.75rem; align-items: center; }
-  .btn {
-    display: inline-flex; align-items: center; gap: 0.4rem;
-    padding: 0.55rem 1.1rem; border-radius: 8px;
-    font-family: 'DM Sans', sans-serif;
-    font-size: 0.78rem; font-weight: 600;
-    cursor: pointer; border: none; transition: all .2s;
-    white-space: nowrap;
-  }
-  .btn-primary { background: var(--accent); color: white; }
-  .btn-primary:hover { background: #1d4ed8; transform: translateY(-1px); box-shadow: 0 4px 14px rgba(37,99,235,0.4); }
-  .btn-secondary { background: rgba(255,255,255,0.07); color: var(--text); border: 1px solid var(--border); }
-  .btn-secondary:hover { background: rgba(255,255,255,0.12); }
-  .btn-gold { background: var(--gold); color: var(--navy); }
-  .btn-gold:hover { background: var(--gold2); transform: translateY(-1px); }
-  #fileInput { display: none; }
+.header-actions { display:flex; gap:0.6rem; align-items:center; }
+.btn {
+  display:inline-flex; align-items:center; gap:0.4rem;
+  padding:0.5rem 1rem; border-radius:7px;
+  font-family:'DM Sans',sans-serif; font-size:0.76rem; font-weight:600;
+  cursor:pointer; border:none; transition:all .2s; white-space:nowrap;
+}
+.btn-red    { background:var(--accent); color:white; }
+.btn-red:hover { background:var(--accent2); transform:translateY(-1px); box-shadow:0 4px 14px rgba(196,30,30,0.45); }
+.btn-yellow { background:var(--yellow); color:var(--navy); font-weight:700; }
+.btn-yellow:hover { background:var(--yellow2); transform:translateY(-1px); }
+.btn-ghost  { background:rgba(255,255,255,0.06); color:var(--text); border:1px solid rgba(255,255,255,0.1); }
+.btn-ghost:hover { background:rgba(255,255,255,0.11); }
+#fileInput { display:none; }
 
-  /* ─── TABS ─── */
-  .tabs-bar {
-    background: var(--surface);
-    border-bottom: 1px solid var(--border);
-    padding: 0 2rem;
-    display: flex; overflow-x: auto;
-    gap: 0; scrollbar-width: none;
-  }
-  .tabs-bar::-webkit-scrollbar { display: none; }
-  .tab {
-    padding: 0.85rem 1.5rem;
-    font-size: 0.8rem; font-weight: 600;
-    color: var(--muted);
-    cursor: pointer;
-    border-bottom: 3px solid transparent;
-    transition: all .2s;
-    white-space: nowrap;
-    text-transform: uppercase; letter-spacing: 1px;
-    user-select: none;
-  }
-  .tab:hover { color: var(--sky); }
-  .tab.active { color: var(--sky); border-bottom-color: var(--accent); }
+/* ═══ TABS ═══ */
+.tabs-bar {
+  background:var(--surface); border-bottom:1px solid var(--border2);
+  padding:0 2rem; display:flex; overflow-x:auto; scrollbar-width:none;
+}
+.tabs-bar::-webkit-scrollbar { display:none; }
+.tab {
+  padding:0.8rem 1.4rem; font-size:0.76rem; font-weight:600;
+  color:var(--muted); cursor:pointer;
+  border-bottom:3px solid transparent; transition:all .2s;
+  white-space:nowrap; text-transform:uppercase; letter-spacing:1px; user-select:none;
+}
+.tab:hover { color:var(--yellow2); }
+.tab.active { color:var(--yellow2); border-bottom-color:var(--accent); }
 
-  /* ─── MAIN ─── */
-  .main { max-width: 1600px; margin: 0 auto; padding: 2rem; }
-  .pane { display: none; }
-  .pane.active { display: block; }
+/* ═══ MAIN ═══ */
+.main { max-width:1600px; margin:0 auto; padding:2rem; }
+.pane { display:none; }
+.pane.active { display:block; }
 
-  /* ─── SUMMARY KPIs row ─── */
-  .kpi-row { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
-  .kpi-card {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 14px;
-    padding: 1.25rem 1.5rem;
-    position: relative; overflow: hidden;
-    transition: transform .2s;
-  }
-  .kpi-card:hover { transform: translateY(-3px); }
-  .kpi-card::before {
-    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
-    background: linear-gradient(90deg, var(--accent), var(--sky));
-  }
-  .kpi-card.gold::before { background: linear-gradient(90deg, var(--gold), var(--gold2)); }
-  .kpi-card.green::before { background: linear-gradient(90deg, var(--green), #34d399); }
-  .kpi-card.red::before { background: linear-gradient(90deg, var(--red), #f87171); }
-  .kpi-label { font-size: 0.68rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 0.5rem; }
-  .kpi-value { font-family: 'Bebas Neue', sans-serif; font-size: 2rem; color: var(--white); letter-spacing: 1px; line-height: 1; }
-  .kpi-sub { font-size: 0.7rem; color: var(--muted); margin-top: 0.3rem; }
-  .kpi-badge {
-    display: inline-block; padding: 2px 8px; border-radius: 20px;
-    font-size: 0.65rem; font-weight: 700; margin-top: 0.4rem;
-  }
-  .badge-green { background: rgba(16,185,129,0.15); color: #34d399; }
-  .badge-red { background: rgba(239,68,68,0.15); color: #f87171; }
-  .badge-gold { background: rgba(245,158,11,0.15); color: var(--gold2); }
+/* ═══ KPI ROW ═══ */
+.kpi-row { display:grid; grid-template-columns:repeat(auto-fill,minmax(190px,1fr)); gap:1rem; margin-bottom:2rem; }
+.kpi-card {
+  background:var(--card); border:1px solid var(--border2); border-radius:14px;
+  padding:1.2rem 1.4rem; position:relative; overflow:hidden; transition:transform .2s;
+}
+.kpi-card:hover { transform:translateY(-3px); }
+.kpi-card::before { content:''; position:absolute; top:0; left:0; right:0; height:3px;
+  background:linear-gradient(90deg,var(--cobalt),var(--sky)); }
+.kpi-card.gold::before { background:linear-gradient(90deg,var(--yellow),var(--yellow2)); }
+.kpi-card.green::before { background:linear-gradient(90deg,#16a34a,#4ade80); }
+.kpi-card.red::before { background:linear-gradient(90deg,var(--accent),var(--accent2)); }
+.kpi-label { font-size:0.65rem; color:var(--muted); text-transform:uppercase; letter-spacing:1.5px; margin-bottom:0.4rem; }
+.kpi-value { font-family:'Bebas Neue',sans-serif; font-size:1.9rem; color:var(--white); letter-spacing:1px; line-height:1; }
+.kpi-sub   { font-size:0.68rem; color:var(--muted); margin-top:0.25rem; }
 
-  /* ─── CARDS ─── */
-  .card {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 16px;
-    padding: 1.5rem;
-    margin-bottom: 1.5rem;
-    box-shadow: var(--shadow);
-  }
-  .card-title {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 1.2rem; letter-spacing: 2px;
-    color: var(--sky); margin-bottom: 1rem;
-    display: flex; align-items: center; gap: 0.5rem;
-  }
-  .card-title .icon { font-size: 1rem; }
+/* ═══ CARDS ═══ */
+.card {
+  background:var(--card); border:1px solid var(--border2);
+  border-radius:16px; padding:1.5rem; margin-bottom:1.5rem; box-shadow:var(--shadow);
+}
+.card-title {
+  font-family:'Bebas Neue',sans-serif; font-size:1.15rem; letter-spacing:2px;
+  color:var(--yellow2); margin-bottom:1rem; display:flex; align-items:center; gap:0.5rem;
+}
 
-  /* ─── GRID LAYOUTS ─── */
-  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
-  .grid-3 { display: grid; grid-template-columns: repeat(3,1fr); gap: 1.5rem; }
-  @media(max-width:1100px) { .grid-2 { grid-template-columns: 1fr; } }
-  @media(max-width:900px) { .grid-3 { grid-template-columns: 1fr 1fr; } }
-  @media(max-width:600px) { .grid-3 { grid-template-columns: 1fr; } }
+/* ═══ GRIDS ═══ */
+.grid-2 { display:grid; grid-template-columns:1fr 1fr; gap:1.5rem; }
+.grid-3 { display:grid; grid-template-columns:repeat(3,1fr); gap:1.5rem; }
+@media(max-width:1100px){ .grid-2 { grid-template-columns:1fr; } }
+@media(max-width:900px){ .grid-3 { grid-template-columns:1fr 1fr; } }
+@media(max-width:600px){ .grid-3,.grid-2 { grid-template-columns:1fr; } }
 
-  /* ─── TABLES ─── */
-  .table-wrap { overflow-x: auto; border-radius: 10px; }
-  table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
-  thead th {
-    background: rgba(37,99,235,0.15);
-    color: var(--sky);
-    font-size: 0.7rem; font-weight: 700;
-    text-transform: uppercase; letter-spacing: 1px;
-    padding: 0.75rem 1rem;
-    border-bottom: 2px solid var(--border);
-    white-space: nowrap;
-    text-align: left;
-  }
-  tbody tr {
-    border-bottom: 1px solid rgba(255,255,255,0.05);
-    transition: background .15s;
-  }
-  tbody tr:hover { background: rgba(37,99,235,0.07); }
-  tbody td { padding: 0.65rem 1rem; vertical-align: middle; }
-  .num { text-align: right; font-variant-numeric: tabular-nums; }
-  .provider-chip {
-    display: inline-block; padding: 3px 10px; border-radius: 20px;
-    font-size: 0.72rem; font-weight: 700;
-  }
-  .chip-evoltis   { background: rgba(239,68,68,.15);   color: #f87171; }
-  .chip-bircle    { background: rgba(245,158,11,.15);  color: #fbbf24; }
-  .chip-teleprom  { background: rgba(16,185,129,.15);  color: #34d399; }
-  .chip-quabund   { background: rgba(167,139,250,.15); color: #a78bfa; }
-  .chip-thinkchat { background: rgba(59,130,246,.15);  color: #93c5fd; }
-  .chip-thinkchatsi { background: rgba(20,184,166,.15); color: #5eead4; }
-  .winner-row td { font-weight: 700; }
-  .best-cell { background: rgba(16,185,129,0.12); color: #34d399; font-weight: 700; }
-  .base-cell { background: rgba(245,158,11,0.1); border-left: 3px solid var(--gold2); }
-  .changed-cell { background: rgba(239,68,68,0.12); color: #f87171; }
+/* ═══ TABLES ═══ */
+.table-wrap { overflow-x:auto; border-radius:10px; }
+table { width:100%; border-collapse:collapse; font-size:0.81rem; }
+thead th {
+  background:rgba(30,79,160,0.18); color:var(--yellow2);
+  font-size:0.68rem; font-weight:700; text-transform:uppercase; letter-spacing:1px;
+  padding:0.7rem 0.9rem; border-bottom:2px solid var(--border); white-space:nowrap; text-align:left;
+}
+tbody tr { border-bottom:1px solid rgba(255,255,255,0.04); transition:background .15s; }
+tbody tr:hover { background:rgba(30,79,160,0.08); }
+tbody td { padding:0.6rem 0.9rem; vertical-align:middle; }
+.num { text-align:right; font-variant-numeric:tabular-nums; }
+.best-cell { background:rgba(22,163,74,0.12); color:#4ade80; font-weight:700; }
+.changed-cell { background:rgba(196,30,30,0.1); color:#f87171; }
+.base-cell { background:rgba(245,194,0,0.08); border-left:3px solid var(--yellow); }
 
-  /* ─── SENSITIVITY CONTROLS ─── */
-  .sens-controls {
-    display: grid; grid-template-columns: repeat(auto-fill, minmax(220px,1fr));
-    gap: 1rem; margin-bottom: 1.5rem;
-  }
-  .sens-item { display: flex; flex-direction: column; gap: 0.4rem; }
-  .sens-item label { font-size: 0.72rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
-  .sens-item .val-display {
-    display: flex; justify-content: space-between; align-items: center;
-    font-size: 0.8rem;
-  }
-  .sens-item .base-tag {
-    font-size: 0.65rem; background: rgba(245,158,11,0.2); color: var(--gold2);
-    padding: 1px 6px; border-radius: 4px; font-weight: 700;
-  }
-  .sens-item .changed-tag {
-    font-size: 0.65rem; background: rgba(239,68,68,0.2); color: #f87171;
-    padding: 1px 6px; border-radius: 4px; font-weight: 700; display: none;
-  }
-  input[type=range] {
-    width: 100%; accent-color: var(--accent);
-    height: 4px; border-radius: 4px; cursor: pointer;
-  }
+/* ═══ PROVIDER CHIPS ═══ */
+.provider-chip { display:inline-block; padding:3px 10px; border-radius:20px; font-size:0.72rem; font-weight:700; }
+.chip-evoltis    { background:rgba(220,38,38,.15);  color:#f87171; }
+.chip-bircle     { background:rgba(245,158,11,.15); color:#fbbf24; }
+.chip-teleprom   { background:rgba(22,163,74,.15);  color:#4ade80; }
+.chip-quabund    { background:rgba(139,92,246,.15); color:#a78bfa; }
+.chip-thinkchat  { background:rgba(59,130,246,.15); color:#93c5fd; }
+.chip-thinkchatsi{ background:rgba(20,184,166,.15); color:#5eead4; }
+.winner-tag { background:linear-gradient(135deg,#16a34a,#059669); color:white; font-size:0.63rem; font-weight:700; padding:2px 7px; border-radius:4px; }
 
-  /* ─── QUALITATIVE GRID ─── */
-  .qual-grid {
-    display: grid;
-    grid-template-columns: 160px repeat(5, 1fr);
-    gap: 0;
-    font-size: 0.78rem;
-  }
-  .qual-header {
-    background: rgba(37,99,235,0.15);
-    color: var(--sky);
-    font-size: 0.7rem; font-weight: 700;
-    text-transform: uppercase; letter-spacing: 1px;
-    padding: 0.7rem 0.8rem;
-    border: 1px solid rgba(255,255,255,0.06);
-  }
-  .qual-row-label {
-    background: rgba(37,99,235,0.08);
-    color: var(--muted);
-    font-size: 0.72rem; font-weight: 700;
-    text-transform: uppercase; letter-spacing: 0.8px;
-    padding: 0.7rem 0.8rem;
-    border: 1px solid rgba(255,255,255,0.06);
-    display: flex; align-items: flex-start;
-  }
-  .qual-cell {
-    padding: 0.7rem 0.8rem;
-    border: 1px solid rgba(255,255,255,0.06);
-    color: var(--text);
-    line-height: 1.45;
-    font-size: 0.74rem;
-    vertical-align: top;
-  }
-  .qual-cell:nth-child(even) { background: rgba(255,255,255,0.02); }
+/* ═══ BADGES ═══ */
+.kpi-badge { display:inline-block; padding:2px 8px; border-radius:20px; font-size:0.63rem; font-weight:700; margin-top:0.35rem; }
+.badge-green{ background:rgba(22,163,74,0.15);  color:#4ade80; }
+.badge-red  { background:rgba(220,38,38,0.15);  color:#f87171; }
+.badge-gold { background:rgba(245,194,0,0.15);  color:var(--yellow2); }
 
-  /* ─── STAR RATING ─── */
-  .stars { color: var(--gold2); font-size: 0.9rem; }
+/* ═══ SECTION LABEL ═══ */
+.section-label {
+  font-size:0.65rem; color:var(--muted); text-transform:uppercase; letter-spacing:2px;
+  margin-bottom:0.75rem; display:flex; align-items:center; gap:0.5rem;
+}
+.section-label::after { content:''; flex:1; height:1px; background:var(--border2); }
 
-  /* ─── CHART containers ─── */
-  .chart-container { position: relative; width: 100%; }
-  .chart-container canvas { max-width: 100%; }
+/* ═══ CONCLUSION LIST ═══ */
+.conclusion-list { display:flex; flex-direction:column; gap:0.65rem; }
+.conclusion-item {
+  display:flex; gap:0.9rem; align-items:flex-start;
+  background:rgba(255,255,255,0.03); border-left:3px solid var(--cobalt);
+  border-radius:0 8px 8px 0; padding:0.75rem 0.9rem;
+}
+.conclusion-item.green-border { border-left-color:#16a34a; }
+.conclusion-item.gold-border  { border-left-color:var(--yellow); }
+.conclusion-item.red-border   { border-left-color:var(--accent); }
+.conclusion-item .ci-icon { font-size:1.1rem; flex-shrink:0; }
+.conclusion-item p { font-size:0.8rem; line-height:1.55; }
 
-  /* ─── CONCLUSIONS ─── */
-  .conclusion-list { display: flex; flex-direction: column; gap: 0.75rem; }
-  .conclusion-item {
-    display: flex; gap: 1rem; align-items: flex-start;
-    background: rgba(255,255,255,0.03);
-    border-left: 3px solid var(--accent);
-    border-radius: 0 8px 8px 0;
-    padding: 0.8rem 1rem;
-  }
-  .conclusion-item .ci-icon { font-size: 1.2rem; flex-shrink: 0; }
-  .conclusion-item p { font-size: 0.82rem; color: var(--text); line-height: 1.55; }
-  .conclusion-item.green-border { border-left-color: var(--green); }
-  .conclusion-item.gold-border { border-left-color: var(--gold2); }
-  .conclusion-item.red-border { border-left-color: var(--red); }
+/* ═══ QUALITATIVE GRID ═══ */
+.qual-grid { display:grid; grid-template-columns:150px repeat(5,1fr); gap:0; font-size:0.75rem; }
+.qual-header { background:rgba(30,79,160,0.2); color:var(--yellow2); font-size:0.68rem; font-weight:700;
+  text-transform:uppercase; letter-spacing:1px; padding:0.65rem 0.75rem; border:1px solid rgba(255,255,255,0.05); }
+.qual-row-label { background:rgba(30,79,160,0.08); color:var(--muted); font-size:0.68rem; font-weight:700;
+  text-transform:uppercase; padding:0.65rem 0.75rem; border:1px solid rgba(255,255,255,0.05); }
+.qual-cell { padding:0.65rem 0.75rem; border:1px solid rgba(255,255,255,0.05); line-height:1.45; font-size:0.72rem; }
+.qual-cell:nth-child(even) { background:rgba(255,255,255,0.015); }
+.stars { color:var(--yellow2); font-size:0.9rem; }
 
-  /* ─── UPLOAD INFO ─── */
-  .upload-banner {
-    background: rgba(37,99,235,0.08); border: 1px dashed var(--border);
-    border-radius: 10px; padding: 0.75rem 1rem;
-    font-size: 0.78rem; color: var(--muted);
-    display: flex; align-items: center; gap: 0.5rem;
-    margin-bottom: 1.5rem;
-  }
-  .upload-banner span { color: var(--sky); }
+/* ═══ UPLOAD BANNER ═══ */
+.upload-banner {
+  background:rgba(30,79,160,0.08); border:1px dashed rgba(245,194,0,0.2);
+  border-radius:10px; padding:0.65rem 1rem; font-size:0.76rem; color:var(--muted);
+  display:flex; align-items:center; gap:0.5rem; margin-bottom:1.5rem;
+}
+.upload-banner span { color:var(--yellow2); }
 
-  /* ─── ANIMATE IN ─── */
-  @keyframes fadeUp { from { opacity:0; transform: translateY(18px); } to { opacity:1; transform: translateY(0); } }
-  .pane.active .card, .pane.active .kpi-card { animation: fadeUp .35s ease both; }
-  .pane.active .kpi-card:nth-child(2) { animation-delay:.05s; }
-  .pane.active .kpi-card:nth-child(3) { animation-delay:.1s; }
-  .pane.active .kpi-card:nth-child(4) { animation-delay:.15s; }
-  .pane.active .kpi-card:nth-child(5) { animation-delay:.2s; }
-  .pane.active .card:nth-child(2) { animation-delay:.07s; }
-  .pane.active .card:nth-child(3) { animation-delay:.14s; }
+/* ═══ CHART containers ═══ */
+.chart-container { position:relative; width:100%; }
 
-  /* ─── RESPONSIVE ─── */
-  @media(max-width:768px) {
-    .header-inner { flex-wrap: wrap; padding: 0.75rem 0; }
-    .header-kpi { display: none; }
-    .main { padding: 1rem; }
-    .qual-grid { grid-template-columns: 120px repeat(5,1fr); font-size: 0.68rem; }
-  }
+/* ═══ ANIMATIONS ═══ */
+@keyframes fadeUp { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
+.pane.active .card  { animation:fadeUp .35s ease both; }
+.pane.active .kpi-card { animation:fadeUp .3s ease both; }
+.pane.active .kpi-card:nth-child(2) { animation-delay:.04s; }
+.pane.active .kpi-card:nth-child(3) { animation-delay:.08s; }
+.pane.active .kpi-card:nth-child(4) { animation-delay:.12s; }
+.pane.active .kpi-card:nth-child(5) { animation-delay:.16s; }
+.pane.active .card:nth-child(2) { animation-delay:.06s; }
+.pane.active .card:nth-child(3) { animation-delay:.12s; }
 
-  /* ─── CASHFLOW PARAMS ─── */
-  .cf-params-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-    gap: 1rem;
-    margin-bottom: 0.5rem;
-  }
-  .cf-param-item { display: flex; flex-direction: column; gap: 0.4rem; }
-  .cf-param-item label {
-    font-size: 0.7rem; color: var(--muted);
-    text-transform: uppercase; letter-spacing: 1px;
-    display: flex; justify-content: space-between; align-items: center;
-  }
-  .cf-param-val { font-weight: 700; color: var(--text); font-size: 0.85rem; }
-  .cf-base-tag {
-    font-size: 0.62rem; background: rgba(245,158,11,0.18); color: var(--gold2);
-    padding: 1px 7px; border-radius: 12px; font-weight: 700;
-  }
-  .cf-changed-tag {
-    font-size: 0.62rem; background: rgba(239,68,68,0.18); color: #f87171;
-    padding: 1px 7px; border-radius: 12px; font-weight: 700; display: none;
-  }
-  .prov-btn {
-    padding: 0.45rem 1rem; border-radius: 20px; font-size: 0.76rem; font-weight: 700;
-    cursor: pointer; border: 2px solid transparent; transition: all .2s;
-    background: rgba(255,255,255,0.06); color: var(--muted);
-  }
-  .prov-btn:hover { background: rgba(255,255,255,0.12); color: var(--text); }
-  .prov-btn.active-prov { border-color: var(--accent); color: var(--white); background: rgba(37,99,235,0.18); }
-  .prov-btn.prov-evoltis.active-prov   { border-color:#f87171; color:#f87171; background:rgba(239,68,68,0.12); }
-  .prov-btn.prov-bircle.active-prov    { border-color:#fbbf24; color:#fbbf24; background:rgba(245,158,11,0.12); }
-  .prov-btn.prov-teleprom.active-prov  { border-color:#34d399; color:#34d399; background:rgba(16,185,129,0.12); }
-  .prov-btn.prov-quabund.active-prov   { border-color:#a78bfa; color:#a78bfa; background:rgba(167,139,250,0.12); }
-  .prov-btn.prov-thinkchat.active-prov { border-color:#93c5fd; color:#93c5fd; background:rgba(59,130,246,0.12); }
-  .prov-btn.prov-thinkchatsi.active-prov { border-color:#5eead4; color:#5eead4; background:rgba(20,184,166,0.12); }
-  .cf-row-base td  { }
-  .cf-row-changed td.num { color: #f87171; font-weight: 700; }
-  .cf-total-row { background: rgba(37,99,235,0.1); font-weight: 700; }
-  .cf-total-row td { color: var(--sky); }
-  .delta-pos { color: #f87171; font-weight: 700; }
-  .delta-neg { color: #34d399; font-weight: 700; }
-  .delta-zero { color: var(--muted); }
+/* ═══ CF SPECIFIC STYLES ═══ */
 
+/* Provider selector buttons */
+.prov-btns { display:flex; gap:0.5rem; flex-wrap:wrap; margin-bottom:1.5rem; }
+.prov-btn {
+  padding:0.45rem 1.1rem; border-radius:20px; font-size:0.76rem; font-weight:600;
+  cursor:pointer; border:2px solid rgba(255,255,255,0.08); transition:all .2s;
+  background:rgba(255,255,255,0.04); color:var(--muted);
+}
+.prov-btn:hover { color:var(--text); background:rgba(255,255,255,0.09); }
+.prov-btn.active-prov { color:var(--white) !important; }
+.pb-evoltis.active-prov    { border-color:#f87171; background:rgba(220,38,38,.14); color:#f87171; }
+.pb-bircle.active-prov     { border-color:#fbbf24; background:rgba(245,158,11,.14); color:#fbbf24; }
+.pb-teleprom.active-prov   { border-color:#4ade80; background:rgba(22,163,74,.14); color:#4ade80; }
+.pb-quabund.active-prov    { border-color:#a78bfa; background:rgba(139,92,246,.14); color:#a78bfa; }
+.pb-thinkchat.active-prov  { border-color:#93c5fd; background:rgba(59,130,246,.14); color:#93c5fd; }
+.pb-thinkchatsi.active-prov{ border-color:#5eead4; background:rgba(20,184,166,.14); color:#5eead4; }
 
-  .badge-row { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 0.5rem; }
+/* ── THE DUAL SLIDER COMPONENT ── */
+.dual-slider-wrap {
+  display:grid; grid-template-columns:1fr 1fr; gap:2rem;
+  background:rgba(30,79,160,0.07); border:1px solid var(--border2);
+  border-radius:14px; padding:1.5rem 2rem; margin-bottom:1.5rem;
+}
+@media(max-width:700px){ .dual-slider-wrap { grid-template-columns:1fr; } }
 
-  .divider { height: 1px; background: var(--border); margin: 1.5rem 0; }
+.slider-block { display:flex; flex-direction:column; gap:0.6rem; }
+.slider-header { display:flex; justify-content:space-between; align-items:baseline; }
+.slider-title { font-size:0.68rem; font-weight:700; text-transform:uppercase; letter-spacing:1.5px; color:var(--muted); }
+.slider-val-display { display:flex; align-items:center; gap:0.6rem; }
+.slider-current { font-family:'Bebas Neue',sans-serif; font-size:1.8rem; color:var(--white); letter-spacing:1px; line-height:1; }
+.slider-current.is-changed { color:var(--yellow2); }
+.slider-unit { font-size:0.75rem; color:var(--muted); }
 
-  .section-label {
-    font-size: 0.68rem; color: var(--muted);
-    text-transform: uppercase; letter-spacing: 2px;
-    margin-bottom: 0.75rem;
-    display: flex; align-items: center; gap: 0.5rem;
-  }
-  .section-label::after { content:''; flex:1; height:1px; background: var(--border); }
+/* Custom range track with base-line marker */
+.slider-track-wrap {
+  position:relative; padding-bottom:1.8rem; margin-top:0.3rem;
+}
+input[type=range] {
+  -webkit-appearance:none; appearance:none;
+  width:100%; height:6px; border-radius:4px; outline:none; cursor:pointer;
+  background: linear-gradient(to right, var(--cobalt) 0%, var(--cobalt) var(--pct,0%), rgba(255,255,255,0.1) var(--pct,0%), rgba(255,255,255,0.1) 100%);
+}
+input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance:none; appearance:none;
+  width:20px; height:20px; border-radius:50%;
+  background:var(--yellow); border:3px solid var(--navy);
+  box-shadow:0 0 0 2px var(--yellow),0 2px 8px rgba(0,0,0,0.5);
+  cursor:pointer; transition:transform .15s;
+}
+input[type=range]::-webkit-slider-thumb:hover { transform:scale(1.15); }
+input[type=range]::-moz-range-thumb {
+  width:20px; height:20px; border-radius:50%;
+  background:var(--yellow); border:3px solid var(--navy);
+  box-shadow:0 0 0 2px var(--yellow); cursor:pointer;
+}
 
-  /* winner highlight */
-  .winner-tag {
-    background: linear-gradient(135deg, var(--green), #059669);
-    color: white; font-size: 0.65rem; font-weight: 700;
-    padding: 2px 8px; border-radius: 4px; letter-spacing: 0.5px;
-  }
+/* Base marker line */
+.base-marker {
+  position:absolute; bottom:0; transform:translateX(-50%);
+  display:flex; flex-direction:column; align-items:center; gap:0;
+  pointer-events:none;
+}
+.base-marker-line {
+  width:2px; height:14px;
+  background:var(--accent); border-radius:1px;
+}
+.base-marker-label {
+  font-size:0.6rem; font-weight:700; color:var(--accent);
+  white-space:nowrap; margin-top:1px; letter-spacing:0.5px;
+}
+
+/* Base/changed tags */
+.tag-base {
+  display:inline-block; font-size:0.62rem; font-weight:700;
+  background:rgba(245,194,0,0.15); color:var(--yellow2);
+  padding:2px 8px; border-radius:12px; letter-spacing:0.5px;
+}
+.tag-changed {
+  display:none; font-size:0.62rem; font-weight:700;
+  background:rgba(196,30,30,0.15); color:#f87171;
+  padding:2px 8px; border-radius:12px; letter-spacing:0.5px;
+}
+.tag-changed.show { display:inline-block; }
+.tag-base.hide { display:none; }
+
+/* Other params row (read-only info) */
+.params-info-row {
+  display:grid; grid-template-columns:repeat(auto-fill,minmax(140px,1fr));
+  gap:0.6rem; margin-bottom:1.5rem;
+}
+.param-info-chip {
+  background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.07);
+  border-radius:9px; padding:0.5rem 0.75rem;
+}
+.param-info-chip .pic-label { font-size:0.6rem; color:var(--muted); text-transform:uppercase; letter-spacing:1px; }
+.param-info-chip .pic-val   { font-size:0.9rem; font-weight:700; color:var(--text); margin-top:2px; }
+
+/* Cashflow table specific */
+.cf-total-row td { font-weight:700; color:var(--yellow2); background:rgba(245,194,0,0.06); }
+.cf-row-var td:first-child::after { content:' ●'; font-size:0.6rem; color:var(--sky); }
+.cf-row-fixed td:first-child::after { content:' ○'; font-size:0.6rem; color:var(--muted); }
+.delta-pos { color:#f87171; font-weight:700; }
+.delta-neg { color:#4ade80; font-weight:700; }
+
+/* scenario indicator badge */
+.scenario-badge {
+  display:none; font-size:0.7rem; font-weight:700;
+  background:rgba(245,194,0,0.15); color:var(--yellow2);
+  border:1px solid rgba(245,194,0,0.3);
+  padding:3px 10px; border-radius:20px; letter-spacing:0.5px;
+}
+.scenario-badge.show { display:inline-block; }
+
+@media(max-width:768px){
+  .header-kpi { display:none; }
+  .main { padding:1rem; }
+  .qual-grid { grid-template-columns:110px repeat(5,1fr); font-size:0.65rem; }
+}
 </style>
 </head>
 <body>
 
-<!-- ══════════════ HEADER ══════════════ -->
+<!-- ═══════════ HEADER ═══════════ -->
 <header class="header">
   <div class="header-inner">
     <div class="brand">
-      <div class="brand-logo">IF</div>
+      <div class="brand-logo">
+        <img src="data:image/png;base64,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pXkCjezaz5XUecUdm1nyuo84pqeaj7XcrH9/4/cH837K8ipDkdm1nyuo84ph13/vu8ptU9EYb6b3UFjWU7MSzLR5ubfbfXbo6F8gA31UEAARD9RVRUVFVFTaiofgCKQ2jFVdSIkdSnZUSbO2XJ6dPH0kqtuILXXZNZUJFIvxJe1X8lK0BK02MVEGgnOHT9VGVOEwTaQM09H0VwAqqiuVfR5JTVcsaJ8VHZt8i7Dr02L7pGiJK2CZONXMyX0bPQTMWPwO9cEd/wDfYoiXA5m+oQe5T4ERpcZPkejH29ua8aS5fcdOC/7rGj+xMs+LdP8A0b8eJU0nqu7j9FoyYdUR+s3vC7YIvVYt3Buftfrdtl/TZfhOdPjOucmUNLTx87s3L9xikxekZoLu4rJHhVU/+nvCnJq11woqFutVVMcXHkq9sveTfUr2sv8Ad6pFR9a9jV+LHkzq2nMcqucrnKqqu+qkfNlA0aImdqkIcBdrld2KYXXGKZOjt0H1sv3N/PyEUrKqprJlmqpnyvXjcu93uQwggqmtnqT/ABHaObYpqno4acfwx17UABqLaQABEAARAAEQABEAARAAEQABEAARAAEQABEAARAAEQABEAARAAEQABEAARAAEQABEAARAAEQABEAARAAEQABEAARAAEQABEAARAAEQABEAARAAEQABEAARAAEQABEAARAAEQABEAARAAEQABEAARAAEQABEAARAAEQABEAARAAEQABF//9k=" alt="Inverfin">
+      </div>
+      <div class="brand-sep"></div>
       <div class="brand-text">
-        <h1>INVERFIN</h1>
-        <p>Dashboard Comparativo · Telecobranzas</p>
+        <h1>Dashboard Telecobranzas</h1>
+        <p>Análisis Comparativo de Proveedores · 2024</p>
       </div>
     </div>
 
     <div class="header-kpi">
-      <div class="kpi-chip">
-        <div class="kv">6</div>
-        <div class="kl">Proveedores</div>
-      </div>
-      <div class="kpi-chip">
-        <div class="kv">70K</div>
-        <div class="kl">Clientes</div>
-      </div>
-      <div class="kpi-chip">
-        <div class="kv" id="hdr-best-annual">$28,389</div>
-        <div class="kl">Menor costo/año</div>
-      </div>
-      <div class="kpi-chip">
-        <div class="kv" id="hdr-best-name">Teleprom</div>
-        <div class="kl">Recomendado</div>
-      </div>
+      <div class="kpi-chip"><div class="kv">6</div><div class="kl">Proveedores</div></div>
+      <div class="kpi-chip"><div class="kv">70K</div><div class="kl">Clientes Base</div></div>
+      <div class="kpi-chip"><div class="kv" id="hdr-best-annual">$28,389</div><div class="kl">Menor Costo/Año</div></div>
+      <div class="kpi-chip"><div class="kv" id="hdr-best-name">Teleprom</div><div class="kl">Recomendado</div></div>
     </div>
 
     <div class="header-actions">
-      <button class="btn btn-secondary" onclick="document.getElementById('fileInput').click()">⬆ Cargar Excel</button>
+      <button class="btn btn-ghost" onclick="document.getElementById('fileInput').click()">⬆ Cargar Excel</button>
       <input type="file" id="fileInput" accept=".xlsx,.xls" onchange="handleUpload(event)">
-      <button class="btn btn-gold" onclick="resetToBase()">↺ Reset</button>
+      <button class="btn btn-yellow" onclick="resetAll()">↺ Reset</button>
     </div>
   </div>
 </header>
 
-<!-- ══════════════ TABS ══════════════ -->
+<!-- ═══════════ TABS ═══════════ -->
 <nav class="tabs-bar" id="tabsBar">
-  <div class="tab active" onclick="switchTab('summary')">📊 Resumen Ejecutivo</div>
-  <div class="tab" onclick="switchTab('cashflow')">💰 Flujo de Caja</div>
-  <div class="tab" onclick="switchTab('chart')">📈 Análisis Gráfico</div>
-  <div class="tab" onclick="switchTab('sensitivity')">🎛 Sensibilidad</div>
-  <div class="tab" onclick="switchTab('qualitative')">⭐ Comparativo Cualitativo</div>
-  <div class="tab" onclick="switchTab('costs')">🧮 Costo Mensual</div>
+  <div class="tab active"  onclick="switchTab('summary')">📊 Resumen Ejecutivo</div>
+  <div class="tab"         onclick="switchTab('cashflow')">💰 Flujo de Caja</div>
+  <div class="tab"         onclick="switchTab('chart')">📈 Análisis Gráfico</div>
+  <div class="tab"         onclick="switchTab('sensitivity')">🎛 Sensibilidad</div>
+  <div class="tab"         onclick="switchTab('qualitative')">⭐ Comparativo Cualitativo</div>
+  <div class="tab"         onclick="switchTab('costs')">🧮 Costo Mensual</div>
 </nav>
 
-<!-- ══════════════ MAIN ══════════════ -->
+<!-- ═══════════ MAIN ═══════════ -->
 <div class="main">
   <div class="upload-banner" id="uploadBanner">
-    📁 Datos hardcodeados del Excel. <span>Cargue un archivo .xlsx</span> para actualizar los datos en tiempo real.
+    📁 Datos cargados desde el Excel fuente. <span>Cargue un archivo .xlsx actualizado</span> para refrescar los datos.
   </div>
 
-  <!-- ════ PANE: SUMMARY ════ -->
+  <!-- ══ RESUMEN ══ -->
   <div class="pane active" id="pane-summary">
     <div class="kpi-row" id="summaryKpis"></div>
-
     <div class="grid-2">
       <div class="card">
-        <div class="card-title"><span class="icon">🏆</span> Ranking por Costo Total 5 Años</div>
-        <div class="chart-container" style="height:300px">
-          <canvas id="chart5yr"></canvas>
-        </div>
+        <div class="card-title">🏆 Ranking – Costo Total 5 Años</div>
+        <div class="chart-container" style="height:290px"><canvas id="chart5yr"></canvas></div>
       </div>
       <div class="card">
-        <div class="card-title"><span class="icon">📉</span> Costo Anual Promedio por Proveedor</div>
-        <div class="chart-container" style="height:300px">
-          <canvas id="chartAnnual"></canvas>
-        </div>
+        <div class="card-title">📉 Costo Anual Promedio por Proveedor</div>
+        <div class="chart-container" style="height:290px"><canvas id="chartAnnual"></canvas></div>
       </div>
     </div>
-
     <div class="card">
-      <div class="card-title"><span class="icon">📋</span> Tabla Comparativa de Costos – Caso Base</div>
+      <div class="card-title">📋 Tabla Comparativa de Costos – Caso Base</div>
       <div class="table-wrap">
-        <table id="tableCostsBase">
-          <thead>
-            <tr>
-              <th>Proveedor</th>
-              <th>Factura Local</th>
-              <th class="num">Implementación ($)</th>
-              <th class="num">Soporte Mensual ($)</th>
-              <th class="num">Módulo IA / conv.</th>
-              <th class="num">Licencia Agente ($)</th>
-              <th class="num">Costo Total 5 Años ($)</th>
-              <th class="num">VP 5 Años ($)</th>
-              <th class="num">Costo Anual Prom. ($)</th>
-            </tr>
-          </thead>
+        <table>
+          <thead><tr>
+            <th>Proveedor</th><th>Factura Local</th>
+            <th class="num">Implementación ($)</th><th class="num">Soporte/mes ($)</th>
+            <th class="num">Módulo IA/conv.</th><th class="num">Licencia Agente ($)</th>
+            <th class="num">Total 5 Años ($)</th><th class="num">VP 5 Años ($)</th>
+            <th class="num">Costo Anual ($)</th>
+          </tr></thead>
           <tbody id="tbodyCostsBase"></tbody>
         </table>
       </div>
     </div>
-
     <div class="card">
-      <div class="card-title"><span class="icon">💡</span> Conclusiones del Análisis</div>
+      <div class="card-title">💡 Conclusiones del Análisis</div>
       <div class="conclusion-list" id="conclusionList"></div>
     </div>
   </div>
 
-  <!-- ════ PANE: CASHFLOW ════ -->
+  <!-- ══ FLUJO DE CAJA ══ -->
   <div class="pane" id="pane-cashflow">
 
-    <!-- PARAMETERS PANEL -->
-    <div class="card" id="cfParamsCard">
-      <div class="card-title"><span class="icon">🎛</span> Parámetros del Flujo de Caja</div>
-      <p style="font-size:0.78rem;color:var(--muted);margin-bottom:1.25rem">
-        Seleccione el proveedor y ajuste los parámetros. Los valores <span style="color:var(--gold2);font-weight:700">dorados</span> = caso base; <span style="color:#f87171;font-weight:700">rojos</span> = modificado.
-      </p>
+    <!-- SELECTOR DE PROVEEDOR -->
+    <div class="card">
+      <div class="card-title">🏢 Selección de Proveedor</div>
+      <div class="prov-btns" id="cfProvBtns"></div>
 
-      <!-- Provider selector -->
-      <div style="margin-bottom:1.5rem">
-        <div class="section-label">Proveedor</div>
-        <div id="cfProviderBtns" style="display:flex;gap:0.5rem;flex-wrap:wrap"></div>
+      <!-- PARÁMETROS FIJOS (informativo) -->
+      <div class="section-label">Parámetros Fijos del Modelo</div>
+      <div class="params-info-row">
+        <div class="param-info-chip"><div class="pic-label">Agentes</div><div class="pic-val">66</div></div>
+        <div class="param-info-chip"><div class="pic-label">Msj Entrantes/mes</div><div class="pic-val">3,000</div></div>
+        <div class="param-info-chip"><div class="pic-label">Tasa Descuento</div><div class="pic-val">10%</div></div>
+        <div class="param-info-chip"><div class="pic-label">Horizonte</div><div class="pic-val">5 años</div></div>
+        <div class="param-info-chip"><div class="pic-label">Factura Local</div><div class="pic-val" id="cfFactLabel">Sí</div></div>
       </div>
 
-      <!-- Parameter sliders grid -->
-      <div class="section-label">Parámetros de Volumen</div>
-      <div class="cf-params-grid" id="cfParamsGrid"></div>
+      <!-- SLIDERS DE SENSIBILIZACIÓN (solo 2 variables independientes) -->
+      <div class="section-label">Variables Independientes de Sensibilización</div>
+      <div class="dual-slider-wrap">
 
-      <div style="display:flex;gap:0.75rem;margin-top:1.25rem;flex-wrap:wrap;align-items:center">
-        <button class="btn btn-gold" onclick="resetCfParams()">↺ Restaurar Caso Base</button>
-        <div id="cfChangeIndicator" style="font-size:0.75rem;color:var(--muted)"></div>
+        <!-- SLIDER 1: Clientes -->
+        <div class="slider-block">
+          <div class="slider-header">
+            <span class="slider-title">Cantidad de Clientes</span>
+            <div style="display:flex;gap:0.4rem;align-items:center">
+              <span class="tag-base" id="tag-base-clientes">BASE: 70,000</span>
+              <span class="tag-changed" id="tag-chg-clientes">≠ BASE</span>
+            </div>
+          </div>
+          <div class="slider-val-display">
+            <span class="slider-current" id="val-clientes">70,000</span>
+            <span class="slider-unit">clientes</span>
+          </div>
+          <div class="slider-track-wrap">
+            <input type="range" id="rng-clientes" min="10000" max="200000" step="5000" value="70000"
+                   style="--pct:33.33%"
+                   oninput="updateSlider('clientes', this.value)">
+            <div class="base-marker" id="bm-clientes">
+              <div class="base-marker-line"></div>
+              <div class="base-marker-label">BASE 70K</div>
+            </div>
+          </div>
+          <div style="display:flex;justify-content:space-between;font-size:0.6rem;color:var(--muted);margin-top:-1rem">
+            <span>10K</span><span>200K</span>
+          </div>
+        </div>
+
+        <!-- SLIDER 2: Mensajes por cliente -->
+        <div class="slider-block">
+          <div class="slider-header">
+            <span class="slider-title">Mensajes por Cliente / Mes</span>
+            <div style="display:flex;gap:0.4rem;align-items:center">
+              <span class="tag-base" id="tag-base-msjxcli">BASE: 5</span>
+              <span class="tag-changed" id="tag-chg-msjxcli">≠ BASE</span>
+            </div>
+          </div>
+          <div class="slider-val-display">
+            <span class="slider-current" id="val-msjxcli">5</span>
+            <span class="slider-unit">mensajes / cliente</span>
+          </div>
+          <div class="slider-track-wrap">
+            <input type="range" id="rng-msjxcli" min="1" max="20" step="1" value="5"
+                   style="--pct:21.05%"
+                   oninput="updateSlider('msjxcli', this.value)">
+            <div class="base-marker" id="bm-msjxcli">
+              <div class="base-marker-line"></div>
+              <div class="base-marker-label">BASE 5</div>
+            </div>
+          </div>
+          <div style="display:flex;justify-content:space-between;font-size:0.6rem;color:var(--muted);margin-top:-1rem">
+            <span>1</span><span>20</span>
+          </div>
+        </div>
+
+      </div><!-- /dual-slider-wrap -->
+
+      <!-- Total mensajes derivado -->
+      <div style="display:flex;align-items:center;gap:1rem;flex-wrap:wrap;margin-bottom:0.5rem">
+        <div style="background:rgba(245,194,0,0.08);border:1px solid rgba(245,194,0,0.2);border-radius:10px;padding:0.5rem 1.2rem;display:flex;align-items:center;gap:0.75rem">
+          <span style="font-size:0.65rem;color:var(--muted);text-transform:uppercase;letter-spacing:1px">Total Mensajes/Mes =</span>
+          <span style="font-family:'Bebas Neue',sans-serif;font-size:1.4rem;color:var(--yellow2)" id="derived-total-msj">350,000</span>
+          <span style="font-size:0.72rem;color:var(--muted)">mensajes</span>
+          <span class="scenario-badge" id="scenario-badge-msj">⚡ Modificado</span>
+        </div>
+        <button class="btn btn-yellow" onclick="resetCfSliders()">↺ Restaurar Caso Base</button>
       </div>
     </div>
 
-    <!-- KPI summary row -->
-    <div class="kpi-row" id="cfKpiRow" style="margin-bottom:1.5rem"></div>
+    <!-- KPIs de flujo -->
+    <div class="kpi-row" id="cfKpiRow"></div>
 
-    <!-- Cashflow table -->
+    <!-- TABLA DE FLUJO DINÁMICO -->
     <div class="card">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;flex-wrap:wrap;gap:0.75rem">
-        <div class="card-title" style="margin-bottom:0"><span class="icon">💰</span> Flujo de Caja Proyectado – <span id="cfProvTitle" style="color:var(--gold2)">Teleprom</span></div>
-        <div style="display:flex;gap:0.5rem">
-          <span id="cfBaseIndicator" style="font-size:0.72rem;background:rgba(245,158,11,0.15);color:var(--gold2);padding:3px 10px;border-radius:20px;font-weight:700;display:none">⚡ Escenario modificado</span>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;flex-wrap:wrap;gap:0.5rem">
+        <div class="card-title" style="margin-bottom:0">
+          💰 Flujo de Caja – <span id="cfProvTitle" style="color:var(--accent)">Teleprom</span>
         </div>
+        <span class="scenario-badge" id="scenario-badge-table">⚡ Escenario sensibilizado</span>
       </div>
       <div class="table-wrap">
         <table>
-          <thead>
-            <tr>
-              <th>Concepto</th>
-              <th class="num">Tarifa Unit.</th>
-              <th class="num">Año 0 ($)</th>
-              <th class="num">Año 1 ($)</th>
-              <th class="num">Año 2 ($)</th>
-              <th class="num">Año 3 ($)</th>
-              <th class="num">Año 4 ($)</th>
-              <th class="num">Año 5 ($)</th>
-              <th class="num">Total ($)</th>
-            </tr>
-          </thead>
-          <tbody id="tbodyCashflowDyn"></tbody>
+          <thead><tr id="cfTableHead"></tr></thead>
+          <tbody id="tbodyCfDyn"></tbody>
         </table>
       </div>
     </div>
 
-    <!-- Charts row -->
+    <!-- Charts -->
     <div class="grid-2">
       <div class="card">
-        <div class="card-title"><span class="icon">📊</span> Evolución Acumulada del Costo</div>
-        <div class="chart-container" style="height:320px">
-          <canvas id="chartCfCumul"></canvas>
-        </div>
+        <div class="card-title">📊 Costo Acumulado – Base vs. Escenario</div>
+        <div class="chart-container" style="height:310px"><canvas id="chartCfCumul"></canvas></div>
       </div>
       <div class="card">
-        <div class="card-title"><span class="icon">📈</span> Costo Anual – Todos los Proveedores</div>
-        <div class="chart-container" style="height:320px">
-          <canvas id="chartFlowAll"></canvas>
-        </div>
+        <div class="card-title">📈 Costo Anual por Proveedor (Escenario actual)</div>
+        <div class="chart-container" style="height:310px"><canvas id="chartCfAllProv"></canvas></div>
       </div>
     </div>
 
-    <!-- Comparison table base vs scenario -->
-    <div class="card" id="cfCompareCard">
-      <div class="card-title"><span class="icon">⚖️</span> Comparativo Caso Base vs. Escenario Sensibilizado</div>
-      <div class="table-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th>Concepto</th>
-              <th class="num">Base Año 1 ($)</th>
-              <th class="num">Escenario Año 1 ($)</th>
-              <th class="num">Δ Monto</th>
-              <th class="num">Δ %</th>
-              <th class="num">Base Total 5A ($)</th>
-              <th class="num">Escenario Total 5A ($)</th>
-            </tr>
-          </thead>
-          <tbody id="tbodyCfCompare"></tbody>
-        </table>
-      </div>
-    </div>
+  </div><!-- /pane-cashflow -->
 
-  </div>
-
-  <!-- ════ PANE: CHART ════ -->
+  <!-- ══ GRÁFICO VOLUMEN ══ -->
   <div class="pane" id="pane-chart">
     <div class="card">
-      <div class="card-title"><span class="icon">📈</span> Costo Total por Volumen de Conversaciones</div>
-      <div class="chart-container" style="height:420px">
-        <canvas id="chartVolume"></canvas>
-      </div>
+      <div class="card-title">📈 Costo Total por Volumen de Conversaciones</div>
+      <div class="chart-container" style="height:420px"><canvas id="chartVolume"></canvas></div>
     </div>
     <div class="card">
-      <div class="card-title"><span class="icon">🥇</span> Proveedor más Económico por Volumen</div>
+      <div class="card-title">🥇 Proveedor Más Económico por Volumen</div>
       <div class="table-wrap">
-        <table id="tableVolume">
-          <thead>
-            <tr>
-              <th class="num">Conversaciones</th>
-              <th class="num">Evoltis</th>
-              <th class="num">Bircle</th>
-              <th class="num">Teleprom</th>
-              <th class="num">Quabum</th>
-              <th class="num">Thinkchat IA</th>
-              <th class="num">Thinkchat Sin IA</th>
-              <th>Más Económico</th>
-            </tr>
-          </thead>
+        <table>
+          <thead><tr>
+            <th class="num">Conversaciones</th><th class="num">Evoltis</th><th class="num">Bircle</th>
+            <th class="num">Teleprom</th><th class="num">Quabum</th><th class="num">Thinkchat IA</th>
+            <th class="num">Thinkchat Sin IA</th><th>Más Económico</th>
+          </tr></thead>
           <tbody id="tbodyVolume"></tbody>
         </table>
       </div>
     </div>
   </div>
 
-  <!-- ════ PANE: SENSITIVITY ════ -->
+  <!-- ══ SENSIBILIDAD ══ -->
   <div class="pane" id="pane-sensitivity">
     <div class="card">
-      <div class="card-title"><span class="icon">🎛</span> Parámetros de Sensibilidad</div>
-      <p style="font-size:0.78rem;color:var(--muted);margin-bottom:1rem">
-        Ajuste los parámetros. Los valores <span style="color:var(--gold2);font-weight:700">dorados</span> indican el caso base;
-        los valores <span style="color:#f87171;font-weight:700">rojos</span> indican cambios respecto al caso base.
+      <div class="card-title">🎛 Parámetros de Sensibilidad – Costo Mensual</div>
+      <p style="font-size:0.77rem;color:var(--muted);margin-bottom:1rem">
+        Ajuste los parámetros. Valores <span style="color:var(--yellow2);font-weight:700">dorados</span> = caso base; <span style="color:#f87171;font-weight:700">rojos</span> = modificado.
       </p>
-      <div class="sens-controls" id="sensControls"></div>
-      <button class="btn btn-gold" style="margin-top:0.5rem" onclick="resetToBase()">↺ Restaurar Caso Base</button>
+      <div id="sensControls" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:1rem;margin-bottom:1rem"></div>
+      <button class="btn btn-yellow" onclick="resetToBase()">↺ Restaurar Caso Base</button>
     </div>
-
     <div class="grid-2">
       <div class="card">
-        <div class="card-title"><span class="icon">💡</span> Costo Mensual Sensibilizado</div>
-        <div class="chart-container" style="height:320px">
-          <canvas id="chartSensBar"></canvas>
-        </div>
+        <div class="card-title">💡 Costo Mensual Sensibilizado</div>
+        <div class="chart-container" style="height:310px"><canvas id="chartSensBar"></canvas></div>
       </div>
       <div class="card">
-        <div class="card-title"><span class="icon">📋</span> Tabla de Resultados Sensibilizados</div>
+        <div class="card-title">📋 Tabla de Resultados</div>
         <div class="table-wrap">
           <table>
-            <thead>
-              <tr>
-                <th>Proveedor</th>
-                <th class="num">Caso Base ($)</th>
-                <th class="num">Escenario ($)</th>
-                <th class="num">Δ Variación</th>
-              </tr>
-            </thead>
+            <thead><tr><th>Proveedor</th><th class="num">Caso Base ($)</th><th class="num">Escenario ($)</th><th class="num">Δ</th></tr></thead>
             <tbody id="tbodySensResult"></tbody>
           </table>
         </div>
@@ -657,55 +597,43 @@
     </div>
   </div>
 
-  <!-- ════ PANE: QUALITATIVE ════ -->
+  <!-- ══ CUALITATIVO ══ -->
   <div class="pane" id="pane-qualitative">
     <div class="card">
-      <div class="card-title"><span class="icon">⭐</span> Comparativo Cualitativo de Proveedores</div>
-      <div style="overflow-x:auto">
-        <div class="qual-grid" id="qualGrid"></div>
-      </div>
+      <div class="card-title">⭐ Comparativo Cualitativo de Proveedores</div>
+      <div style="overflow-x:auto"><div class="qual-grid" id="qualGrid"></div></div>
     </div>
     <div class="card" style="margin-top:1.5rem">
-      <div class="card-title"><span class="icon">🎯</span> Calificación por Dimensión</div>
-      <div class="chart-container" style="height:360px">
-        <canvas id="chartRadar"></canvas>
-      </div>
+      <div class="card-title">🎯 Calificación por Dimensión</div>
+      <div class="chart-container" style="height:360px"><canvas id="chartRadar"></canvas></div>
     </div>
   </div>
 
-  <!-- ════ PANE: COSTS ════ -->
+  <!-- ══ COSTO MENSUAL ══ -->
   <div class="pane" id="pane-costs">
     <div class="kpi-row" id="monthlyCostKpis"></div>
     <div class="grid-2">
       <div class="card">
-        <div class="card-title"><span class="icon">💵</span> Costo Mensual Fijo por Proveedor</div>
-        <div class="chart-container" style="height:300px">
-          <canvas id="chartMonthlyFixed"></canvas>
-        </div>
+        <div class="card-title">💵 Costo Mensual Fijo</div>
+        <div class="chart-container" style="height:290px"><canvas id="chartMonthlyFixed"></canvas></div>
       </div>
       <div class="card">
-        <div class="card-title"><span class="icon">📦</span> Costo Variable Mensual por Proveedor</div>
-        <div class="chart-container" style="height:300px">
-          <canvas id="chartMonthlyVar"></canvas>
-        </div>
+        <div class="card-title">📦 Costo Variable Mensual</div>
+        <div class="chart-container" style="height:290px"><canvas id="chartMonthlyVar"></canvas></div>
       </div>
     </div>
     <div class="card">
-      <div class="card-title"><span class="icon">🧾</span> Detalle Costo Mensual – Fijos</div>
+      <div class="card-title">🧾 Detalle Costo Mensual Fijo</div>
       <div class="table-wrap">
-        <table id="tableMonthlyFixed">
-          <thead><tr><th>Proveedor</th><th>Concepto</th><th class="num">Cantidad</th><th class="num">Precio Unit.</th><th class="num">Total ($)</th></tr></thead>
-          <tbody id="tbodyMonthlyFixed"></tbody>
-        </table>
+        <table><thead><tr><th>Proveedor</th><th>Concepto</th><th class="num">Cant.</th><th class="num">Unit.</th><th class="num">Total ($)</th></tr></thead>
+        <tbody id="tbodyMonthlyFixed"></tbody></table>
       </div>
     </div>
     <div class="card" style="margin-top:1.5rem">
-      <div class="card-title"><span class="icon">🔄</span> Detalle Costo Variable Mensual</div>
+      <div class="card-title">🔄 Detalle Costo Variable Mensual</div>
       <div class="table-wrap">
-        <table>
-          <thead><tr><th>Proveedor</th><th>Concepto</th><th class="num">Cantidad</th><th class="num">Precio Unit.</th><th class="num">Total ($)</th></tr></thead>
-          <tbody id="tbodyMonthlyVar"></tbody>
-        </table>
+        <table><thead><tr><th>Proveedor</th><th>Concepto</th><th class="num">Cant.</th><th class="num">Unit.</th><th class="num">Total ($)</th></tr></thead>
+        <tbody id="tbodyMonthlyVar"></tbody></table>
       </div>
     </div>
   </div>
@@ -713,523 +641,275 @@
 </div><!-- /main -->
 
 <script>
-// ═══════════════════════════════════════════════
-//  BASE DATA (hardcoded from Excel)
-// ═══════════════════════════════════════════════
+// ════════════════════════════════════════════
+//  DATA
+// ════════════════════════════════════════════
 const BASE = {
-  assumptions: {
-    clientes: 70000,
-    msjPorCliente: 5,
-    totalMensajes: 350000,
-    msjEntranteMes: 3000,
-    agentesTeleo: 66,
-    agentesTV: 130,
-    tasa: 0.10  // discount rate
-  },
-  providers: [
-    { name:'Evoltis',         chip:'chip-evoltis',
-      impl:810,    soporte:0,      modIA:0.041,  msjUtil:0.0113, licencia:77.62, mensajeEntrant:0,   factLocal:'Sí',
-      total5yr:547645.2, vp5yr:404993.86, costAnual:80998.77 },
-    { name:'Bircle',          chip:'chip-bircle',
-      impl:1550.27,soporte:1550.27,modIA:0.041,  msjUtil:0.0113, licencia:0,     mensajeEntrant:0,   factLocal:'No',
-      total5yr:389478.2, vp5yr:288298.14, costAnual:57659.63 },
-    { name:'Teleprom',        chip:'chip-teleprom',
-      impl:350,    soporte:250,    modIA:0.0114, msjUtil:0.0113, licencia:15,    mensajeEntrant:0.0113, factLocal:'Sí',
-      total5yr:191924,   vp5yr:141946.55, costAnual:28389.31 },
-    { name:'Quabund',         chip:'chip-quabund',
-      impl:3975,   soporte:0,      modIA:0.12,   msjUtil:0.0113, licencia:15,    mensajeEntrant:0,   factLocal:'Sí',
-      total5yr:627435,   vp5yr:464698.85, costAnual:92939.77 },
-    { name:'Thinkchat',       chip:'chip-thinkchat',
-      impl:1600,   soporte:0,      modIA:0.06,   msjUtil:0.0113, licencia:15,    mensajeEntrant:0,   factLocal:'Sí',
-      total5yr:360460,   vp5yr:266811.63, costAnual:53362.33 },
-    { name:'Thinkchat Sin IA',chip:'chip-thinkchatsi',
-      impl:1600,   soporte:0,      modIA:0.042,  msjUtil:0.1299, licencia:20,    mensajeEntrant:0,   factLocal:'Sí',
-      total5yr:304660,   vp5yr:225565.42, costAnual:45113.08 },
+  assumptions:{clientes:70000,msjPorCliente:5,totalMensajes:350000,msjEntranteMes:3000,agentesTeleo:66,agentesTV:130,tasa:0.10},
+  providers:[
+    {name:'Evoltis',         impl:810,    soporte:0,      modIA:0.041,  msjUtil:0.0113,licencia:77.62,mensajeEntrant:0,   factLocal:'Sí', total5yr:547645.2,vp5yr:404993.86,costAnual:80998.77},
+    {name:'Bircle',          impl:1550.27,soporte:1550.27,modIA:0.041,  msjUtil:0.0113,licencia:0,    mensajeEntrant:0,   factLocal:'No', total5yr:389478.2,vp5yr:288298.14,costAnual:57659.63},
+    {name:'Teleprom',        impl:350,    soporte:250,    modIA:0.0114, msjUtil:0.0113,licencia:15,   mensajeEntrant:0.0113,factLocal:'Sí',total5yr:191924,  vp5yr:141946.55,costAnual:28389.31},
+    {name:'Quabund',         impl:3975,   soporte:0,      modIA:0.12,   msjUtil:0.0113,licencia:15,   mensajeEntrant:0,   factLocal:'Sí', total5yr:627435,  vp5yr:464698.85,costAnual:92939.77},
+    {name:'Thinkchat',       impl:1600,   soporte:0,      modIA:0.06,   msjUtil:0.0113,licencia:15,   mensajeEntrant:0,   factLocal:'Sí', total5yr:360460,  vp5yr:266811.63,costAnual:53362.33},
+    {name:'Thinkchat Sin IA',impl:1600,   soporte:0,      modIA:0.042,  msjUtil:0.1299,licencia:20,   mensajeEntrant:0,   factLocal:'Sí', total5yr:304660,  vp5yr:225565.42,costAnual:45113.08},
   ],
-  cashflow: {
-    teleprom: [
-      { concept:'Implementación y entrenamiento', unit:350, yr0:350, yr1:0,yr2:0,yr3:0,yr4:0,yr5:0, total:350 },
-      { concept:'Módulo IA por Conversaciones',   unit:0.0114, yr0:0, yr1:9576,yr2:9576,yr3:9576,yr4:9576,yr5:9576, total:47880 },
-      { concept:'Msj de Utilidad (Meta)',          unit:0.0113, yr0:0, yr1:9492,yr2:9492,yr3:9492,yr4:9492,yr5:9492, total:47460 },
-      { concept:'Módulo con IA',                  unit:0,      yr0:0, yr1:0,yr2:0,yr3:0,yr4:0,yr5:0, total:0 },
-      { concept:'Módulo sin IA',                  unit:0,      yr0:0, yr1:0,yr2:0,yr3:0,yr4:0,yr5:0, total:0 },
-      { concept:'Mensaje Entrante',               unit:0.0113, yr0:0, yr1:406.8,yr2:406.8,yr3:406.8,yr4:406.8,yr5:406.8, total:2034 },
-      { concept:'Soporte y Mantenimiento',        unit:250,    yr0:0, yr1:3000,yr2:3000,yr3:3000,yr4:3000,yr5:3000, total:15000 },
-      { concept:'Licencia por agente',            unit:15,     yr0:0, yr1:11880,yr2:11880,yr3:11880,yr4:11880,yr5:11880, total:59400 },
-      { concept:'Costo por Salir (Thinkchat)',    unit:5,      yr0:0, yr1:3960,yr2:3960,yr3:3960,yr4:3960,yr5:3960, total:19800 },
-      { concept:'Impuestos no recuperables',      unit:0,      yr0:0, yr1:0,yr2:0,yr3:0,yr4:0,yr5:0, total:0 },
-    ]
-  },
-  volumeData: [
-    {convs:3000,  evoltis:6562,  bircle:3600,  teleprom:363.5, quabum:1380, thinkchatIA:300,  thinkchatSin:200,  winner:'Thinkchat Sin IA'},
-    {convs:10000, evoltis:6812,  bircle:5650,  teleprom:477,   quabum:1980, thinkchatIA:600,  thinkchatSin:400,  winner:'Thinkchat Sin IA'},
-    {convs:20000, evoltis:7312,  bircle:9750,  teleprom:704,   quabum:3180, thinkchatIA:1200, thinkchatSin:800,  winner:'Teleprom'},
-    {convs:30000, evoltis:7812,  bircle:13850, teleprom:931,   quabum:4380, thinkchatIA:1800, thinkchatSin:1200, winner:'Teleprom'},
-    {convs:40000, evoltis:8312,  bircle:17950, teleprom:1158,  quabum:5580, thinkchatIA:2400, thinkchatSin:1600, winner:'Teleprom'},
-    {convs:50000, evoltis:8812,  bircle:22050, teleprom:1385,  quabum:6780, thinkchatIA:3000, thinkchatSin:2000, winner:'Teleprom'},
-    {convs:60000, evoltis:9312,  bircle:26150, teleprom:1612,  quabum:7980, thinkchatIA:3600, thinkchatSin:2400, winner:'Teleprom'},
-    {convs:70000, evoltis:9812,  bircle:30250, teleprom:1839,  quabum:9180, thinkchatIA:4200, thinkchatSin:2800, winner:'Teleprom'},
-    {convs:80000, evoltis:10312, bircle:34350, teleprom:2066,  quabum:10380,thinkchatIA:4800, thinkchatSin:3200, winner:'Teleprom'},
+  volumeData:[
+    {convs:3000, evoltis:6562, bircle:3600, teleprom:363.5,quabum:1380, thinkchatIA:300, thinkchatSin:200, winner:'Thinkchat Sin IA'},
+    {convs:10000,evoltis:6812, bircle:5650, teleprom:477,  quabum:1980, thinkchatIA:600, thinkchatSin:400, winner:'Thinkchat Sin IA'},
+    {convs:20000,evoltis:7312, bircle:9750, teleprom:704,  quabum:3180, thinkchatIA:1200,thinkchatSin:800, winner:'Teleprom'},
+    {convs:30000,evoltis:7812, bircle:13850,teleprom:931,  quabum:4380, thinkchatIA:1800,thinkchatSin:1200,winner:'Teleprom'},
+    {convs:40000,evoltis:8312, bircle:17950,teleprom:1158, quabum:5580, thinkchatIA:2400,thinkchatSin:1600,winner:'Teleprom'},
+    {convs:50000,evoltis:8812, bircle:22050,teleprom:1385, quabum:6780, thinkchatIA:3000,thinkchatSin:2000,winner:'Teleprom'},
+    {convs:60000,evoltis:9312, bircle:26150,teleprom:1612, quabum:7980, thinkchatIA:3600,thinkchatSin:2400,winner:'Teleprom'},
+    {convs:70000,evoltis:9812, bircle:30250,teleprom:1839, quabum:9180, thinkchatIA:4200,thinkchatSin:2800,winner:'Teleprom'},
+    {convs:80000,evoltis:10312,bircle:34350,teleprom:2066, quabum:10380,thinkchatIA:4800,thinkchatSin:3200,winner:'Teleprom'},
   ],
-  qualitative: {
-    criteria: ['Trayectoria','Clientes','Flexibilidad / Escalabilidad','Funcionalidades','Implementación','Relevancia para Inverfin'],
-    providers: ['Evoltis','Bircle','Teleprom','Quabund','Thinkchat'],
-    data: [
-      // Trayectoria
-      ['Más de 10 años como empresa CX Tech argentina, con presencia en contact centers, cobranzas y outsourcing para empresas medianas y grandes.',
-       'Startup joven enfocada 100% en IA conversacional para cobranzas y pagos recurrentes de PYMES, mercados de habla hispana; alta tracción mediática reciente.',
-       'Empresa de mensajería y notificaciones con trayectoria en SMS, email y WhatsApp masivo, posicionada como "partner de mensajería" aliada de plataformas de cobranzas.',
-       'Prácticamente sin información pública específica sobre trayectoria en cobranzas por WhatsApp, lo que sugiere menor madurez o soluciones muy custom.',
-       'Más de 10 años en omnicanal Paraguay, presente en Expo eCommerce con bots 24/7.'],
-      // Clientes
-      ['Banco Galicia, Red S.O.S, Municipalidad de Córdoba; outsourcing de cobranza para múltiples industrias.',
-       'Nico Tiendas, Carrefour, Natura, Avon; +30 clientes en finanzas, telco y salud.',
-       'Naranja X (premio ALOIC); +20 implementaciones exitosas en cobranzas WhatsApp.',
-       'Aseguradora del Este.',
-       'Empresas eCommerce Paraguay; usado por Inverfin actualmente en WhatsApp manual.'],
-      // Flexibilidad
-      ['Alta: omnicanal (WhatsApp, SMS, email, llamadas), híbrido bots-humanos, cloud escalable.',
-       'Alta: IA adaptable por comportamiento de pago, omnicanal, integra gateways como Mercado Pago.',
-       'Media-alta: outbound/inbound masivo WhatsApp, personalización por perfil moroso.',
-       'N/D',
-       'Alta: integra WhatsApp, Instagram, SMS; bots escalables para picos como Black Friday.'],
-      // Funcionalidades
-      ['Omnicanal automatizado, IA para segmentación, chatbots, priorización deudores, compliance.',
-       'IA conversacional, recordatorios, negociación, algoritmos de riesgo, reportes y métricas.',
-       'Envíos masivos personalizados WhatsApp/SMS, chatbots; +40% contactabilidad vs. tradicionales.',
-       'N/D',
-       'Omnicanal marketing/ventas, bots IA, segmentación, remarketing WhatsApp.'],
-      // Implementación
-      ['Rápida para BPO; integra sistemas existentes, flujos automatizados en semanas.',
-       'API fácil, white-label, monitoreo de campañas; implementación ágil para PYMES.',
-       'Plataforma lista: API transaccional, +20 casos en meses con alto ROI.',
-       'N/D',
-       'Ya implementado en Inverfin; omnicanal centralizado, analíticas en tiempo real.'],
-      // Relevancia
-      ['Experiencia LATAM/Paraguay en sector financiero, omnicanal para telecobranzas retail.',
-       'Muy alta: IA para morosidad retail, integra pagos; alternativa a ThinkChat manual.',
-       'Alta: expertise WhatsApp cobranzas, mejora contactabilidad para créditos de consumo.',
-       'N/D',
-       'Media: actual pero sin IA nativa; base para upgrade de automatización.'],
+  qualitative:{
+    criteria:['Trayectoria','Clientes','Flexibilidad / Escalabilidad','Funcionalidades','Implementación','Relevancia para Inverfin'],
+    providers:['Evoltis','Bircle','Teleprom','Quabund','Thinkchat'],
+    data:[
+      ['Más de 10 años como empresa CX Tech argentina, contact centers y cobranzas.','Startup IA conversacional para cobranzas PYMES, alta tracción mediática reciente.','Trayectoria en SMS, email y WhatsApp masivo; partner mensajería de plataformas de cobranza.','Sin información pública específica en cobranzas WhatsApp, soluciones custom.','Más de 10 años omnicanal Paraguay, Expo eCommerce, bots 24/7.'],
+      ['Banco Galicia, Red S.O.S, Municipalidad de Córdoba.','Nico Tiendas, Carrefour, Natura, Avon; +30 en finanzas, telco y salud.','Naranja X (premio ALOIC); +20 implementaciones exitosas en cobranzas WhatsApp.','Aseguradora del Este.','Empresas eCommerce Paraguay; Inverfin actualmente (WhatsApp manual).'],
+      ['Alta: omnicanal, híbrido bots-humanos, cloud escalable.','Alta: IA adaptable, omnicanal, integra gateways como Mercado Pago.','Media-alta: outbound/inbound masivo WhatsApp, personalización por perfil.','N/D','Alta: integra WhatsApp, Instagram, SMS; bots escalables para picos.'],
+      ['Omnicanal automatizado, IA segmentación, chatbots, priorización deudores.','IA conversacional, recordatorios, negociación, algoritmos riesgo, reportes.','Envíos masivos personalizados WhatsApp/SMS; +40% contactabilidad.','N/D','Omnicanal marketing/ventas, bots IA, segmentación, remarketing.'],
+      ['Rápida para BPO; integra sistemas existentes, flujos en semanas.','API fácil, white-label, monitoreo campañas; ágil para PYMES.','Plataforma lista; +20 casos en meses con alto ROI.','N/D','Ya implementado en Inverfin; omnicanal centralizado, analíticas tiempo real.'],
+      ['Experiencia LATAM/Paraguay en financiero, omnicanal telecobranzas.','Muy alta: IA morosidad retail, integra pagos; alternativa a ThinkChat manual.','Alta: expertise WhatsApp cobranzas, mejora contactabilidad créditos consumo.','N/D','Media: actual, sin IA nativa; base para upgrade automatización.'],
     ],
-    scores: [
-      // evoltis, bircle, teleprom, quabund, thinkchat
-      [4,3,4,2,4],  // trayectoria
-      [5,4,5,2,3],  // clientes
-      [5,4,4,2,5],  // flexibilidad
-      [4,4,4,2,3],  // funcionalidades
-      [4,4,5,2,5],  // implementacion
-      [4,5,5,2,3],  // relevancia
-    ]
+    scores:[[4,3,4,2,4],[5,4,5,2,3],[5,4,4,2,5],[4,4,4,2,3],[4,4,5,2,5],[4,5,5,2,3]]
   },
-  monthlyFixed: [
-    // Evoltis
-    { prov:'Evoltis', concept:'Licencias agente/supervisor', qty:60, unit:4657, total:4657 },
-    { prov:'Evoltis', concept:'Licencia WhatsApp API', qty:3, unit:382, total:382 },
-    { prov:'Evoltis', concept:'Sesiones ChatGPT', qty:1, unit:127, total:127 },
-    { prov:'Evoltis', concept:'Voicebot con IA', qty:1, unit:559, total:559 },
-    { prov:'Evoltis', concept:'SIP Trunk 5 Canales', qty:24, unit:587, total:587 },
-    // Bircle
-    { prov:'Bircle', concept:'Módulo Core + Reportes y Analíticas (Soporte)', qty:1, unit:1550.27, total:1550.27 },
-    // Teleprom
-    { prov:'Teleprom', concept:'Chatbot Determinístico Soporte/Mantenimiento/Evolutivo', qty:1, unit:250, total:250 },
-    // Quabum
-    { prov:'Quabum', concept:'1000 conversaciones humanizadas + Módulo IA 24hs', qty:1000, unit:0.78, total:780 },
-    // Thinkchat
-    { prov:'Thinkchat', concept:'(Sin costo fijo mensual adicional)', qty:0, unit:0, total:0 },
+  monthlyFixed:[
+    {prov:'Evoltis',concept:'Licencias agente/supervisor',qty:60,unit:4657,total:4657},
+    {prov:'Evoltis',concept:'Licencia WhatsApp API',qty:3,unit:382,total:382},
+    {prov:'Evoltis',concept:'Sesiones ChatGPT',qty:1,unit:127,total:127},
+    {prov:'Evoltis',concept:'Voicebot con IA',qty:1,unit:559,total:559},
+    {prov:'Evoltis',concept:'SIP Trunk 5 Canales',qty:24,unit:587,total:587},
+    {prov:'Bircle',concept:'Módulo Core + Reportes (Soporte)',qty:1,unit:1550.27,total:1550.27},
+    {prov:'Teleprom',concept:'Chatbot Determinístico Soporte/Mant.',qty:1,unit:250,total:250},
+    {prov:'Quabum',concept:'1000 conv. humanizadas + Módulo IA 24hs',qty:1000,unit:0.78,total:780},
+    {prov:'Thinkchat',concept:'(Sin costo fijo mensual adicional)',qty:0,unit:0,total:0},
   ],
-  monthlyVar: [
-    // Evoltis
-    { prov:'Evoltis', concept:'Msj Meta (Utilidad)', qty:350000, unit:0.0113, total:3955 },
-    { prov:'Evoltis', concept:'Módulo IA', qty:350000, unit:0.041, total:14350 },
-    { prov:'Evoltis', concept:'Licencias por Agentes', qty:66, unit:15, total:990 },
-    { prov:'Evoltis', concept:'Mensaje Entrante', qty:3000, unit:0, total:0 },
-    // Bircle
-    { prov:'Bircle', concept:'Módulo IA Conversacional por WhatsApp', qty:0, unit:0.041, total:0 },
-    { prov:'Bircle', concept:'WhatsApp API por Meta (Utilidad)', qty:350000, unit:0.0113, total:3955 },
-    // Teleprom
-    { prov:'Teleprom', concept:'Msj Meta (Utilidad)', qty:350000, unit:0.0113, total:3955 },
-    { prov:'Teleprom', concept:'Módulo IA por mensaje', qty:350000, unit:0.0114, total:3990 },
-    { prov:'Teleprom', concept:'Licencias por Agentes', qty:66, unit:15, total:990 },
-    { prov:'Teleprom', concept:'Mensaje Entrante', qty:3000, unit:0.012, total:36 },
-    // Quantum/Quabum
-    { prov:'Quabum', concept:'Msj Meta (Utilidad)', qty:350000, unit:0.0113, total:3955 },
-    { prov:'Quabum', concept:'Licencia por usuario', qty:66, unit:15, total:990 },
-    { prov:'Quabum', concept:'Módulo IA por conversación', qty:69000, unit:0.12, total:8280 },
-    // Thinkchat
-    { prov:'Thinkchat', concept:'Msj Meta (Utilidad)', qty:70000, unit:0.0113, total:791 },
-    { prov:'Thinkchat', concept:'Módulo IA por Conversación', qty:70000, unit:0.06, total:4200 },
-    { prov:'Thinkchat', concept:'Licencia', qty:66, unit:15, total:990 },
-    // Thinkchat Sin IA
-    { prov:'Thinkchat Sin IA', concept:'Msj Meta (Utilidad)', qty:70000, unit:0.0113, total:791 },
-    { prov:'Thinkchat Sin IA', concept:'Módulo IA por Conversación', qty:70000, unit:0.04, total:2800 },
-    { prov:'Thinkchat Sin IA', concept:'Licencia', qty:66, unit:20, total:1320 },
+  monthlyVar:[
+    {prov:'Evoltis',concept:'Msj Meta (Utilidad)',qty:350000,unit:0.0113,total:3955},
+    {prov:'Evoltis',concept:'Módulo IA',qty:350000,unit:0.041,total:14350},
+    {prov:'Evoltis',concept:'Licencias por Agentes',qty:66,unit:15,total:990},
+    {prov:'Bircle',concept:'WhatsApp API Meta (Utilidad)',qty:350000,unit:0.0113,total:3955},
+    {prov:'Teleprom',concept:'Msj Meta (Utilidad)',qty:350000,unit:0.0113,total:3955},
+    {prov:'Teleprom',concept:'Módulo IA por mensaje',qty:350000,unit:0.0114,total:3990},
+    {prov:'Teleprom',concept:'Licencias por Agentes',qty:66,unit:15,total:990},
+    {prov:'Teleprom',concept:'Mensaje Entrante',qty:3000,unit:0.012,total:36},
+    {prov:'Quabum',concept:'Msj Meta (Utilidad)',qty:350000,unit:0.0113,total:3955},
+    {prov:'Quabum',concept:'Licencia por usuario',qty:66,unit:15,total:990},
+    {prov:'Quabum',concept:'Módulo IA por conversación',qty:69000,unit:0.12,total:8280},
+    {prov:'Thinkchat',concept:'Msj Meta (Utilidad)',qty:70000,unit:0.0113,total:791},
+    {prov:'Thinkchat',concept:'Módulo IA por Conversación',qty:70000,unit:0.06,total:4200},
+    {prov:'Thinkchat',concept:'Licencia',qty:66,unit:15,total:990},
+    {prov:'Thinkchat Sin IA',concept:'Msj Meta (Utilidad)',qty:70000,unit:0.0113,total:791},
+    {prov:'Thinkchat Sin IA',concept:'Módulo IA por Conversación',qty:70000,unit:0.04,total:2800},
+    {prov:'Thinkchat Sin IA',concept:'Licencia',qty:66,unit:20,total:1320},
   ],
-  conclusions: [
-    { icon:'🏆', text:'Teleprom presenta la curva de costos más plana y se convierte en la opción más competitiva a partir de las 20,000 conversaciones, con un costo anual promedio de $28,389.', type:'green-border' },
-    { icon:'⚠️', text:'Thinkchat Sin IA es la opción más económica en volúmenes bajos (5,000–10,000 conversaciones) gracias a su reducido costo variable.', type:'gold-border' },
-    { icon:'❌', text:'Evoltis y Bircle tienen costos fijos y/o variables elevados, lo que los hace poco competitivos en todo el rango analizado.', type:'red-border' },
-    { icon:'📊', text:'Quabum se ubica en un punto intermedio, pero nunca logra ser la opción más barata frente a Teleprom o Thinkchat Sin IA.', type:'' },
-    { icon:'🤖', text:'Thinkchat con IA es más costoso que su versión sin IA en todo el rango analizado; no resulta conveniente si el único criterio es costo.', type:'red-border' },
+  conclusions:[
+    {icon:'🏆',text:'Teleprom presenta la curva de costos más plana y se convierte en la opción más competitiva a partir de las 20,000 conversaciones, con un costo anual promedio de $28,389.',type:'green-border'},
+    {icon:'⚠️',text:'Thinkchat Sin IA es la opción más económica en volúmenes bajos (5,000–10,000 conversaciones) gracias a su reducido costo variable.',type:'gold-border'},
+    {icon:'❌',text:'Evoltis y Bircle tienen costos fijos y/o variables elevados, lo que los hace poco competitivos en todo el rango analizado.',type:'red-border'},
+    {icon:'📊',text:'Quabum se ubica en un punto intermedio, pero nunca logra ser la opción más barata frente a Teleprom o Thinkchat Sin IA.',type:''},
+    {icon:'🤖',text:'Thinkchat con IA es más costoso que su versión sin IA en todo el rango analizado; no resulta conveniente si el único criterio es costo.',type:'red-border'},
   ]
 };
 
-// Sensibility parameters (mutable)
-let sens = {
-  totalMensajes: BASE.assumptions.totalMensajes,
-  agentes: BASE.assumptions.agentesTeleo,
-  msjEntranteMes: BASE.assumptions.msjEntranteMes,
-};
-const BASE_SENS = { ...sens };
+// ════════════════════════════════════════════
+//  UTILS
+// ════════════════════════════════════════════
+const fmt = (v,d=0) => v==null?'-':Number(v).toLocaleString('es-PY',{minimumFractionDigits:d,maximumFractionDigits:d});
+const fmtU = (v,d=4) => v==null?'-':Number(v).toLocaleString('es-PY',{minimumFractionDigits:d,maximumFractionDigits:d});
+const chipCls = n => ({
+  'Evoltis':'chip-evoltis','Bircle':'chip-bircle','Teleprom':'chip-teleprom',
+  'Quabund':'chip-quabund','Quabum':'chip-quabund','Thinkchat':'chip-thinkchat','Thinkchat Sin IA':'chip-thinkchatsi'
+})[n]||'chip-thinkchat';
+const provChip = n => `<span class="provider-chip ${chipCls(n)}">${n}</span>`;
 
-// ═══════════════════════════════════════════════
-//  UTILITIES
-// ═══════════════════════════════════════════════
-const fmt  = (v,d=0) => v == null ? '-' : Number(v).toLocaleString('es-PY',{minimumFractionDigits:d,maximumFractionDigits:d});
-const fmtD = (v,d=4) => v == null ? '-' : Number(v).toLocaleString('es-PY',{minimumFractionDigits:d,maximumFractionDigits:d});
-const chipColor = p => {
-  const map = { 'Evoltis':'chip-evoltis','Bircle':'chip-bircle','Teleprom':'chip-teleprom',
-                'Quabund':'chip-quabund','Quabum':'chip-quabund','Quantum':'chip-quabund',
-                'Thinkchat':'chip-thinkchat','Thinkchat Sin IA':'chip-thinkchatsi' };
-  return map[p] || 'chip-thinkchat';
+const PROV_COLOR = {
+  'Evoltis':'rgba(220,38,38,0.85)','Bircle':'rgba(245,158,11,0.85)',
+  'Teleprom':'rgba(22,163,74,0.85)','Quabund':'rgba(139,92,246,0.85)',
+  'Thinkchat':'rgba(59,130,246,0.85)','Thinkchat Sin IA':'rgba(20,184,166,0.85)'
 };
-const provChip = p => `<span class="provider-chip ${chipColor(p)}">${p}</span>`;
+const PROV_BTN_CLS = {
+  'Evoltis':'pb-evoltis','Bircle':'pb-bircle','Teleprom':'pb-teleprom',
+  'Quabund':'pb-quabund','Thinkchat':'pb-thinkchat','Thinkchat Sin IA':'pb-thinkchatsi'
+};
 
 let charts = {};
-function destroyChart(id) { if(charts[id]) { charts[id].destroy(); delete charts[id]; } }
+function destroyChart(id) { if(charts[id]){ charts[id].destroy(); delete charts[id]; } }
 
-// ═══════════════════════════════════════════════
-//  TAB SWITCHING
-// ═══════════════════════════════════════════════
-function switchTab(id) {
-  document.querySelectorAll('.pane').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-  document.getElementById('pane-'+id).classList.add('active');
-  const tabs = document.querySelectorAll('.tab');
-  const map = ['summary','cashflow','chart','sensitivity','qualitative','costs'];
-  tabs[map.indexOf(id)]?.classList.add('active');
-  setTimeout(() => renderTabCharts(id), 50);
-}
-
-function renderTabCharts(id) {
-  if(id==='summary')     { renderSummaryCharts(); }
-  if(id==='cashflow')    { renderCashflowCharts(); renderCfKpis(); renderCfTable(); renderCfCompareTable(); }
-  if(id==='chart')       { renderVolumeChart(); }
-  if(id==='sensitivity') { renderSensCharts(); }
-  if(id==='qualitative') { renderRadarChart(); }
-  if(id==='costs')       { renderCostCharts(); }
-}
-
-// ═══════════════════════════════════════════════
-//  SUMMARY PANE
-// ═══════════════════════════════════════════════
-function renderSummary() {
-  // KPI cards
-  const sorted = [...BASE.providers].sort((a,b)=>a.costAnual-b.costAnual);
-  const best = sorted[0];
-  const kpis = [
-    { label:'Proveedores Evaluados', val:'6', sub:'Comparación completa', cls:'' },
-    { label:'Clientes Telecobranza', val:'70,000', sub:'Volumen base del modelo', cls:'' },
-    { label:'Proveedor Recomendado', val:best.name, sub:'Menor costo 5 años', cls:'green' },
-    { label:'Costo Anual (mejor)',   val:'$'+fmt(best.costAnual), sub:'Promedio 5 años', cls:'green' },
-    { label:'Ahorro vs. Peor',       val:'$'+fmt(sorted[sorted.length-1].costAnual - best.costAnual), sub:'vs '+sorted[sorted.length-1].name+'/año', cls:'gold' },
-    { label:'VPN Mejor Opción',      val:'$'+fmt(best.vp5yr), sub:'Valor presente 5 años', cls:'' },
-  ];
-  const el = document.getElementById('summaryKpis');
-  el.innerHTML = kpis.map(k=>`
-    <div class="kpi-card ${k.cls}">
-      <div class="kpi-label">${k.label}</div>
-      <div class="kpi-value">${k.val}</div>
-      <div class="kpi-sub">${k.sub}</div>
-    </div>`).join('');
-
-  // Table
-  const tbody = document.getElementById('tbodyCostsBase');
-  const rows = [...BASE.providers].sort((a,b)=>a.total5yr-b.total5yr);
-  tbody.innerHTML = rows.map((p,i)=>{
-    const isBest = i===0;
-    return `<tr class="${isBest?'winner-row':''}">
-      <td>${provChip(p.name)} ${isBest?'<span class="winner-tag">MEJOR</span>':''}</td>
-      <td><span class="kpi-badge ${p.factLocal==='Sí'?'badge-green':'badge-red'}">${p.factLocal}</span></td>
-      <td class="num ${isBest?'best-cell':''}">${fmt(p.impl,2)}</td>
-      <td class="num ${isBest?'best-cell':''}">${fmt(p.soporte,2)}</td>
-      <td class="num ${isBest?'best-cell':''}">${fmtD(p.modIA)}</td>
-      <td class="num ${isBest?'best-cell':''}">${fmt(p.licencia,2)}</td>
-      <td class="num ${isBest?'best-cell':''}">${fmt(p.total5yr,0)}</td>
-      <td class="num ${isBest?'best-cell':''}">${fmt(p.vp5yr,0)}</td>
-      <td class="num ${isBest?'best-cell':''}">${fmt(p.costAnual,0)}</td>
-    </tr>`;
-  }).join('');
-
-  // Conclusions
-  const cl = document.getElementById('conclusionList');
-  cl.innerHTML = BASE.conclusions.map(c=>`
-    <div class="conclusion-item ${c.type}">
-      <div class="ci-icon">${c.icon}</div>
-      <p>${c.text}</p>
-    </div>`).join('');
-
-  // Header KPI update
-  document.getElementById('hdr-best-annual').textContent = '$'+fmt(best.costAnual);
-  document.getElementById('hdr-best-name').textContent = best.name;
-}
-
-function renderSummaryCharts() {
-  const sorted = [...BASE.providers].sort((a,b)=>a.total5yr-b.total5yr);
-  const colors = sorted.map(p=>({
-    'Evoltis':'rgba(239,68,68,0.8)','Bircle':'rgba(245,158,11,0.8)',
-    'Teleprom':'rgba(16,185,129,0.8)','Quabund':'rgba(167,139,250,0.8)',
-    'Thinkchat':'rgba(59,130,246,0.8)','Thinkchat Sin IA':'rgba(20,184,166,0.8)'
-  }[p.name]||'rgba(148,163,184,0.8)'));
-
-  destroyChart('chart5yr');
-  charts['chart5yr'] = new Chart(document.getElementById('chart5yr'), {
-    type:'bar',
-    data:{ labels:sorted.map(p=>p.name),
-      datasets:[{label:'Costo Total 5 Años ($)',data:sorted.map(p=>p.total5yr),backgroundColor:colors,borderRadius:6,borderSkipped:false}] },
-    options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>'$'+fmt(c.raw)}}},
-      scales:{ y:{ticks:{callback:v=>'$'+fmt(v),color:'#94a3b8'},grid:{color:'rgba(255,255,255,0.05)'}},
-               x:{ticks:{color:'#94a3b8'},grid:{display:false}} } }
-  });
-
-  const sorted2 = [...BASE.providers].sort((a,b)=>a.costAnual-b.costAnual);
-  const colors2 = sorted2.map(p=>({
-    'Evoltis':'rgba(239,68,68,0.8)','Bircle':'rgba(245,158,11,0.8)',
-    'Teleprom':'rgba(16,185,129,0.8)','Quabund':'rgba(167,139,250,0.8)',
-    'Thinkchat':'rgba(59,130,246,0.8)','Thinkchat Sin IA':'rgba(20,184,166,0.8)'
-  }[p.name]||'rgba(148,163,184,0.8)'));
-
-  destroyChart('chartAnnual');
-  charts['chartAnnual'] = new Chart(document.getElementById('chartAnnual'), {
-    type:'bar', indexAxis:'y',
-    data:{ labels:sorted2.map(p=>p.name),
-      datasets:[{label:'Costo Anual Promedio ($)',data:sorted2.map(p=>p.costAnual),backgroundColor:colors2,borderRadius:6,borderSkipped:false}] },
-    options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>'$'+fmt(c.raw)}}},
-      scales:{ x:{ticks:{callback:v=>'$'+fmt(v),color:'#94a3b8'},grid:{color:'rgba(255,255,255,0.05)'}},
-               y:{ticks:{color:'#94a3b8'},grid:{display:false}} } }
-  });
-}
-
-// ═══════════════════════════════════════════════
-//  CASHFLOW ENGINE – Dynamic per provider + params
-// ═══════════════════════════════════════════════
-
-// CF state
-const CF_BASE_PARAMS = {
-  clientes: 70000, msjPorCliente: 5, totalMensajes: 350000,
-  msjEntranteMes: 3000, agentes: 66, agentesTV: 130, tasa: 10, horizonte: 5
-};
-let cfParams = { ...CF_BASE_PARAMS };
+// ════════════════════════════════════════════
+//  CASHFLOW ENGINE
+// ════════════════════════════════════════════
+// BASE params (fixed)
+const CF_FIXED = { agentes:66, msjEntranteMes:3000, tasa:10, horizonte:5 };
+// Base values for sliders
+const CF_SLIDER_BASE = { clientes:70000, msjxcli:5 };
+// Current slider state
+let cfSlider = { clientes:70000, msjxcli:5 };
 let cfProvider = 'Teleprom';
 
-// Provider color map
-const PROV_COLOR = {
-  'Evoltis':'rgba(239,68,68,0.85)', 'Bircle':'rgba(245,158,11,0.85)',
-  'Teleprom':'rgba(16,185,129,0.85)', 'Quabund':'rgba(167,139,250,0.85)',
-  'Thinkchat':'rgba(59,130,246,0.85)', 'Thinkchat Sin IA':'rgba(20,184,166,0.85)'
-};
-const PROV_CHIP_CLASS = {
-  'Evoltis':'prov-evoltis','Bircle':'prov-bircle','Teleprom':'prov-teleprom',
-  'Quabund':'prov-quabund','Thinkchat':'prov-thinkchat','Thinkchat Sin IA':'prov-thinkchatsi'
-};
+function derivedMsj(state) { return state.clientes * state.msjxcli; }
 
-// Build cashflow lines dynamically for any provider given current cfParams
-function buildCfLines(provName, params) {
+function buildCfLines(provName, msgs, hz) {
   const p = BASE.providers.find(x=>x.name===provName);
   if(!p) return [];
-  const { totalMensajes: msgs, msjEntranteMes: ent, agentes: ag, tasa, horizonte: hz } = params;
-
-  // Each line: { concept, unit, yr0, recurring (annual), isVar }
+  const ag = CF_FIXED.agentes;
+  const ent = CF_FIXED.msjEntranteMes;
+  const convYr = msgs * 12;
   const lines = [];
 
-  // ─ IMPL (year 0 only)
-  if(p.impl > 0)
-    lines.push({ concept:'Implementación y Entrenamiento', unit: p.impl, yr0: p.impl, recurring: 0, isVar: false });
+  if(p.impl>0)
+    lines.push({concept:'Implementación y Entrenamiento', unit:'$'+p.impl+' (único)', yr0:p.impl, recurring:0, isVar:false});
 
-  // ─ SOPORTE MENSUAL
-  if(p.soporte > 0)
-    lines.push({ concept:'Soporte y Mantenimiento', unit: p.soporte+'/mes', yr0: 0, recurring: p.soporte*12, isVar: false });
+  if(p.soporte>0)
+    lines.push({concept:'Soporte y Mantenimiento', unit:'$'+p.soporte+'/mes', yr0:0, recurring:p.soporte*12, isVar:false});
 
-  // ─ MÓDULO IA por conversación
-  const convPerYear = msgs * 12;
-  if(p.modIA > 0) {
-    const iaLine = { concept:'Módulo IA por Conversación', unit: p.modIA+'/conv', yr0: 0, recurring: p.modIA * convPerYear, isVar: true };
-    if(provName==='Quabund') { iaLine.concept='Módulo IA (est. 20% conv.)'; iaLine.recurring = p.modIA * convPerYear * 0.20; }
-    if(provName==='Thinkchat') { iaLine.concept='Módulo IA WhatsApp (est. 20%)'; iaLine.recurring = p.modIA * convPerYear * 0.20; }
-    if(provName==='Thinkchat Sin IA') { iaLine.concept='Módulo IA por Conversación'; iaLine.recurring = 0.042 * convPerYear * 0.20; }
-    lines.push(iaLine);
+  // Módulo IA
+  if(p.modIA>0) {
+    let rec = p.modIA * convYr;
+    let concept = 'Módulo IA por Conversación';
+    if(provName==='Quabund'||provName==='Thinkchat') { rec=p.modIA*convYr*0.20; concept='Módulo IA (est. 20% conv.)'; }
+    if(provName==='Thinkchat Sin IA') { rec=0.042*convYr*0.20; concept='Módulo IA por Conversación'; }
+    lines.push({concept, unit:fmtU(p.modIA)+'/conv', yr0:0, recurring:rec, isVar:true});
   }
 
-  // ─ MSJ META UTILIDAD
-  const msjYr = msgs * 12;
-  if(provName !== 'Quabund') {
-    const metaAmt = 0.0113 * msjYr;
-    if(metaAmt > 0)
-      lines.push({ concept:'Mensajes Meta (Utilidad)', unit:'0.0113/msj', yr0:0, recurring: metaAmt, isVar: true });
-  } else {
-    lines.push({ concept:'Mensajes Meta (Utilidad)', unit:'0.0113/msj', yr0:0, recurring: 0.0113 * msjYr, isVar: true });
-  }
+  // Meta utilidad
+  const metaRec = 0.0113 * convYr;
+  lines.push({concept:'Mensajes Meta (Utilidad)', unit:'0.0113/msj', yr0:0, recurring:metaRec, isVar:true});
 
-  // ─ USO IA POR MSJ (Thinkchat Sin IA only)
-  if(provName==='Thinkchat Sin IA' && p.msjUtil && p.msjUtil > 0) {
-    lines.push({ concept:'Uso IA por Mensaje', unit: p.msjUtil+'/msj', yr0:0, recurring: p.msjUtil * msjYr * 0.20, isVar: true });
-  }
+  // Uso IA por msj (Thinkchat Sin IA)
+  if(provName==='Thinkchat Sin IA' && p.msjUtil>0)
+    lines.push({concept:'Uso IA por Mensaje', unit:fmtU(p.msjUtil)+'/msj', yr0:0, recurring:p.msjUtil*convYr*0.20, isVar:true});
 
-  // ─ LICENCIA POR AGENTE
-  if(p.licencia > 0)
-    lines.push({ concept:'Licencia por Agente', unit: p.licencia+'/ag/mes', yr0:0, recurring: p.licencia * ag * 12, isVar: false });
+  // Licencia
+  if(p.licencia>0)
+    lines.push({concept:'Licencia por Agente', unit:'$'+p.licencia+'/ag/mes', yr0:0, recurring:p.licencia*ag*12, isVar:false});
 
-  // ─ MENSAJE ENTRANTE
-  if(p.mensajeEntrant > 0)
-    lines.push({ concept:'Costo Mensaje Entrante', unit: p.mensajeEntrant+'/msj', yr0:0, recurring: p.mensajeEntrant * ent * 12, isVar: true });
+  // Mensaje entrante
+  if(p.mensajeEntrant>0)
+    lines.push({concept:'Costo Mensaje Entrante', unit:fmtU(p.mensajeEntrant)+'/msj', yr0:0, recurring:p.mensajeEntrant*ent*12, isVar:true});
 
-  // ─ COSTO POR SALIR (Teleprom only – Thinkchat exit)
+  // Exit fee (Teleprom)
   if(provName==='Teleprom')
-    lines.push({ concept:'Costo Salida Thinkchat (66 ag × $5)', unit:'5/ag', yr0:0, recurring: 5 * ag * 12, isVar: false });
+    lines.push({concept:'Costo Salida Thinkchat', unit:'$5/ag', yr0:0, recurring:5*ag*12, isVar:false});
 
-  // Compute yearly values
   return lines.map(l => {
-    const years = {};
-    for(let y=0; y<=hz; y++) {
-      years['yr'+y] = y===0 ? l.yr0 : l.recurring;
-    }
+    const yrs = {};
+    for(let y=0;y<=hz;y++) yrs['yr'+y] = y===0 ? l.yr0 : l.recurring;
     const total = l.yr0 + l.recurring * hz;
-    return { ...l, ...years, total };
+    return {...l, ...yrs, total};
   });
 }
 
-// Compute NPV given cashflows by year
 function calcNPV(lines, tasa, hz) {
-  const rate = tasa / 100;
-  let npv = 0;
-  for(let y=0; y<=hz; y++) {
-    const annual = lines.reduce((s,l) => s + (l['yr'+y]||0), 0);
-    npv += annual / Math.pow(1+rate, y);
-  }
+  const r = tasa/100; let npv=0;
+  for(let y=0;y<=hz;y++) npv += lines.reduce((s,l)=>s+(l['yr'+y]||0),0) / Math.pow(1+r,y);
   return npv;
 }
 
-// Render everything in cashflow pane
-function renderCashflow() {
-  renderCfProviderBtns();
-  renderCfParamsGrid();
-  renderCfKpis();
-  renderCfTable();
-  renderCfCompareTable();
+// ─ Slider position % for CSS custom property
+function sliderPct(val, min, max) { return (((val-min)/(max-min))*100).toFixed(2)+'%'; }
+
+// ─ Base marker pixel position
+function positionBaseMarker(sliderId, markerId, baseVal, min, max) {
+  const slider = document.getElementById(sliderId);
+  const marker = document.getElementById(markerId);
+  if(!slider||!marker) return;
+  const pct = (baseVal - min) / (max - min);
+  const w = slider.offsetWidth;
+  const thumbHalfW = 10;
+  const pos = thumbHalfW + pct * (w - 2*thumbHalfW);
+  marker.style.left = pos + 'px';
 }
 
-function renderCfProviderBtns() {
-  const el = document.getElementById('cfProviderBtns');
+function updateSlider(key, rawVal) {
+  const val = parseFloat(rawVal);
+  cfSlider[key] = val;
+  const isBase = val === CF_SLIDER_BASE[key];
+
+  if(key==='clientes') {
+    document.getElementById('val-clientes').textContent = fmt(val);
+    document.getElementById('val-clientes').classList.toggle('is-changed', !isBase);
+    document.getElementById('tag-base-clientes').classList.toggle('hide', !isBase);
+    document.getElementById('tag-chg-clientes').classList.toggle('show', !isBase);
+    document.getElementById('rng-clientes').style.setProperty('--pct', sliderPct(val,10000,200000));
+  } else {
+    document.getElementById('val-msjxcli').textContent = fmt(val);
+    document.getElementById('val-msjxcli').classList.toggle('is-changed', !isBase);
+    document.getElementById('tag-base-msjxcli').classList.toggle('hide', !isBase);
+    document.getElementById('tag-chg-msjxcli').classList.toggle('show', !isBase);
+    document.getElementById('rng-msjxcli').style.setProperty('--pct', sliderPct(val,1,20));
+  }
+
+  const totalMsj = derivedMsj(cfSlider);
+  document.getElementById('derived-total-msj').textContent = fmt(totalMsj);
+  const anyChanged = cfSlider.clientes!==CF_SLIDER_BASE.clientes || cfSlider.msjxcli!==CF_SLIDER_BASE.msjxcli;
+  document.getElementById('scenario-badge-msj').classList.toggle('show', anyChanged);
+  document.getElementById('scenario-badge-table').classList.toggle('show', anyChanged);
+
+  renderCfKpis(); renderCfTable(); renderCashflowCharts();
+}
+
+function resetCfSliders() {
+  cfSlider = {...CF_SLIDER_BASE};
+  const rngC = document.getElementById('rng-clientes');
+  const rngM = document.getElementById('rng-msjxcli');
+  if(rngC) { rngC.value=CF_SLIDER_BASE.clientes; rngC.style.setProperty('--pct',sliderPct(CF_SLIDER_BASE.clientes,10000,200000)); }
+  if(rngM) { rngM.value=CF_SLIDER_BASE.msjxcli; rngM.style.setProperty('--pct',sliderPct(CF_SLIDER_BASE.msjxcli,1,20)); }
+  document.getElementById('val-clientes').textContent = fmt(CF_SLIDER_BASE.clientes);
+  document.getElementById('val-clientes').classList.remove('is-changed');
+  document.getElementById('val-msjxcli').textContent = fmt(CF_SLIDER_BASE.msjxcli);
+  document.getElementById('val-msjxcli').classList.remove('is-changed');
+  document.getElementById('tag-base-clientes').classList.remove('hide');
+  document.getElementById('tag-chg-clientes').classList.remove('show');
+  document.getElementById('tag-base-msjxcli').classList.remove('hide');
+  document.getElementById('tag-chg-msjxcli').classList.remove('show');
+  document.getElementById('derived-total-msj').textContent = fmt(CF_SLIDER_BASE.clientes*CF_SLIDER_BASE.msjxcli);
+  document.getElementById('scenario-badge-msj').classList.remove('show');
+  document.getElementById('scenario-badge-table').classList.remove('show');
+  renderCfKpis(); renderCfTable(); renderCashflowCharts();
+}
+
+// ─ Provider buttons
+function renderCfProvBtns() {
+  const el = document.getElementById('cfProvBtns');
   el.innerHTML = BASE.providers.map(p=>`
-    <button class="prov-btn ${PROV_CHIP_CLASS[p.name]||''} ${p.name===cfProvider?'active-prov':''}"
-            onclick="selectCfProvider('${p.name}')">${p.name}</button>`).join('');
+    <button class="prov-btn ${PROV_BTN_CLS[p.name]||''} ${p.name===cfProvider?'active-prov':''}"
+            onclick="selectCfProv('${p.name}')">${p.name}</button>`).join('');
 }
-
-function selectCfProvider(name) {
+function selectCfProv(name) {
   cfProvider = name;
-  renderCfProviderBtns();
+  renderCfProvBtns();
   document.getElementById('cfProvTitle').textContent = name;
-  renderCfKpis();
-  renderCfTable();
-  renderCfCompareTable();
-  renderCashflowCharts();
+  const p = BASE.providers.find(x=>x.name===name);
+  if(p) document.getElementById('cfFactLabel').textContent = p.factLocal;
+  renderCfKpis(); renderCfTable(); renderCashflowCharts();
 }
 
-// Slider parameter definitions
-const CF_PARAM_DEFS = [
-  { key:'clientes',       label:'Cantidad de Clientes',       min:10000, max:200000, step:5000,  base:70000,  unit:'',   decimals:0 },
-  { key:'msjPorCliente',  label:'Mensajes por Cliente / mes', min:1,     max:20,     step:1,     base:5,      unit:'',   decimals:0 },
-  { key:'totalMensajes',  label:'Total Mensajes / mes',       min:50000, max:700000, step:10000, base:350000, unit:'',   decimals:0 },
-  { key:'msjEntranteMes', label:'Mensajes Entrantes / mes',   min:500,   max:15000,  step:250,   base:3000,   unit:'',   decimals:0 },
-  { key:'agentes',        label:'Agentes Telecobranzas',      min:20,    max:250,    step:5,     base:66,     unit:'',   decimals:0 },
-  { key:'tasa',           label:'Tasa de Descuento (%)',      min:1,     max:30,     step:0.5,   base:10,     unit:'%',  decimals:1 },
-  { key:'horizonte',      label:'Horizonte (años)',           min:1,     max:10,     step:1,     base:5,      unit:'a',  decimals:0 },
-];
-
-function renderCfParamsGrid() {
-  const el = document.getElementById('cfParamsGrid');
-  el.innerHTML = CF_PARAM_DEFS.map(d=>{
-    const val = cfParams[d.key];
-    const changed = val !== d.base;
-    return `
-    <div class="cf-param-item">
-      <label>
-        ${d.label}
-        <span class="cf-base-tag" id="cfbtag-${d.key}" style="${changed?'display:none':''}">BASE: ${fmt(d.base,d.decimals)}${d.unit}</span>
-        <span class="cf-changed-tag" id="cfctag-${d.key}" style="${changed?'display:inline':'display:none'}">≠ BASE</span>
-      </label>
-      <div style="display:flex;align-items:center;gap:0.6rem">
-        <input type="range" min="${d.min}" max="${d.max}" step="${d.step}" value="${val}"
-               id="cfrng-${d.key}" oninput="updateCfParam('${d.key}', this.value, ${d.base}, ${d.decimals}, '${d.unit}')">
-        <span class="cf-param-val" id="cfval-${d.key}" style="min-width:60px;text-align:right">${fmt(val,d.decimals)}${d.unit}</span>
-      </div>
-    </div>`;
-  }).join('');
-}
-
-function updateCfParam(key, val, base, decimals, unit) {
-  cfParams[key] = parseFloat(val);
-  document.getElementById('cfval-'+key).textContent = fmt(cfParams[key], decimals) + unit;
-  const changed = cfParams[key] !== base;
-  document.getElementById('cfbtag-'+key).style.display = changed ? 'none' : 'inline';
-  document.getElementById('cfctag-'+key).style.display = changed ? 'inline' : 'none';
-
-  // Check if any param changed from base
-  const anyChanged = CF_PARAM_DEFS.some(d => cfParams[d.key] !== d.base);
-  document.getElementById('cfBaseIndicator').style.display = anyChanged ? 'inline' : 'none';
-  document.getElementById('cfChangeIndicator').textContent = anyChanged ?
-    `${CF_PARAM_DEFS.filter(d=>cfParams[d.key]!==d.base).length} parámetro(s) modificado(s)` : '';
-
-  renderCfKpis();
-  renderCfTable();
-  renderCfCompareTable();
-  renderCashflowCharts();
-}
-
-function resetCfParams() {
-  cfParams = { ...CF_BASE_PARAMS };
-  CF_PARAM_DEFS.forEach(d => {
-    const rng = document.getElementById('cfrng-'+d.key);
-    if(rng) rng.value = d.base;
-    const vl = document.getElementById('cfval-'+d.key);
-    if(vl) vl.textContent = fmt(d.base, d.decimals) + d.unit;
-    const bt = document.getElementById('cfbtag-'+d.key);
-    if(bt) bt.style.display = 'inline';
-    const ct = document.getElementById('cfctag-'+d.key);
-    if(ct) ct.style.display = 'none';
-  });
-  document.getElementById('cfBaseIndicator').style.display = 'none';
-  document.getElementById('cfChangeIndicator').textContent = '';
-  renderCfKpis();
-  renderCfTable();
-  renderCfCompareTable();
-  renderCashflowCharts();
-}
-
+// ─ KPI row
 function renderCfKpis() {
-  const p = BASE.providers.find(x=>x.name===cfProvider);
-  if(!p) return;
-  const lines = buildCfLines(cfProvider, cfParams);
-  const hz = cfParams.horizonte;
-  const totalNominal = lines.reduce((s,l)=>s+l.total, 0);
-  const npv = calcNPV(lines, cfParams.tasa, hz);
-  const avgAnnual = (totalNominal - (lines.find(l=>l.yr0>0)||{}).yr0||0) / hz;
-  const monthly = lines.reduce((s,l)=>s+(l.recurring||0)/12, 0);
-
-  // Base comparison
-  const baseLines = buildCfLines(cfProvider, CF_BASE_PARAMS);
-  const baseTotalNominal = baseLines.reduce((s,l)=>s+l.total, 0);
-  const delta = totalNominal - baseTotalNominal;
-  const deltaSign = delta>=0 ? '+' : '';
-  const deltaCls = delta>0 ? 'badge-red' : delta<0 ? 'badge-green' : 'badge-gold';
-
+  const msgs = derivedMsj(cfSlider);
+  const baseMsgs = derivedMsj(CF_SLIDER_BASE);
+  const hz = CF_FIXED.horizonte;
+  const lines = buildCfLines(cfProvider, msgs, hz);
+  const baseLines = buildCfLines(cfProvider, baseMsgs, hz);
+  const total = lines.reduce((s,l)=>s+l.total,0);
+  const baseTotal = baseLines.reduce((s,l)=>s+l.total,0);
+  const npv = calcNPV(lines, CF_FIXED.tasa, hz);
+  const monthly = lines.reduce((s,l)=>s+(l.recurring||0),0)/12;
+  const delta = total - baseTotal;
   const el = document.getElementById('cfKpiRow');
   el.innerHTML = [
-    { label:'Costo Total Nominal', val:'$'+fmt(totalNominal,0), sub:'Horizonte '+hz+' años', cls:'' },
-    { label:'Valor Presente Neto',  val:'$'+fmt(npv,0),          sub:'Tasa '+cfParams.tasa+'%', cls:'' },
-    { label:'Costo Anual Prom.',    val:'$'+fmt(avgAnnual,0),    sub:'Sin año 0', cls:'' },
-    { label:'Costo Mensual Est.',   val:'$'+fmt(monthly,0),      sub:'Promedio recurrente', cls:'' },
-    { label:'vs. Caso Base',        val:deltaSign+'$'+fmt(Math.abs(delta),0), sub:'Variación total '+hz+'a', cls: delta>0?'red':delta<0?'green':'' },
+    {label:'Costo Total Nominal', val:'$'+fmt(total),         sub:'Horizonte 5 años', cls:''},
+    {label:'Valor Presente Neto',  val:'$'+fmt(npv),           sub:'Tasa 10%',          cls:''},
+    {label:'Costo Anual Prom.',    val:'$'+fmt((total-(lines.find(l=>l.yr0>0)||{yr0:0}).yr0)/hz), sub:'Sin año 0', cls:''},
+    {label:'Costo Mensual Est.',   val:'$'+fmt(monthly),       sub:'Recurrente prom.',  cls:''},
+    {label:'Total Mensajes/Mes',   val:fmt(msgs),              sub:'Clientes × Msj',    cls:'gold'},
+    {label:'vs. Caso Base',        val:(delta>=0?'+':'')+fmt(delta), sub:'Variación acum. 5a', cls:delta>0?'red':delta<0?'green':''},
   ].map(k=>`<div class="kpi-card ${k.cls}">
     <div class="kpi-label">${k.label}</div>
     <div class="kpi-value" style="font-size:1.35rem">${k.val}</div>
@@ -1237,473 +917,444 @@ function renderCfKpis() {
   </div>`).join('');
 }
 
+// ─ Cashflow table
 function renderCfTable() {
-  const lines = buildCfLines(cfProvider, cfParams);
-  const baseLines = buildCfLines(cfProvider, CF_BASE_PARAMS);
-  const hz = cfParams.horizonte;
+  const msgs = derivedMsj(cfSlider);
+  const baseMsgs = derivedMsj(CF_SLIDER_BASE);
+  const hz = CF_FIXED.horizonte;
+  const lines = buildCfLines(cfProvider, msgs, hz);
+  const baseLines = buildCfLines(cfProvider, baseMsgs, hz);
+  const bMap = {}; baseLines.forEach(l=>bMap[l.concept]=l);
 
-  // Build base map for change detection
-  const baseMap = {};
-  baseLines.forEach(l=>{ baseMap[l.concept] = l; });
+  // Header
+  const thead = document.getElementById('cfTableHead');
+  thead.innerHTML = `<th>Concepto</th><th class="num">Tarifa</th>`+
+    Array.from({length:hz+1},(_,y)=>`<th class="num">Año ${y}</th>`).join('')+
+    `<th class="num">Total 5A ($)</th>`;
 
-  const tbody = document.getElementById('tbodyCashflowDyn');
-  // Year columns: 0 to hz
-  const yrCols = Array.from({length: hz+1}, (_,i)=>i);
-
+  const tbody = document.getElementById('tbodyCfDyn');
   tbody.innerHTML = lines.map(l=>{
-    const bl = baseMap[l.concept];
-    const unitChanged = bl && JSON.stringify(l.unit) !== JSON.stringify(bl.unit);
-    const yrCells = yrCols.map(y=>{
+    const bl = bMap[l.concept];
+    const yrCells = Array.from({length:hz+1},(_,y)=>{
       const v = l['yr'+y]||0;
-      const bv = bl ? (bl['yr'+y]||0) : v;
-      const chg = Math.abs(v-bv) > 0.01;
-      if(v===0 && bv===0) return `<td class="num" style="color:var(--muted)">-</td>`;
-      return `<td class="num ${chg?'delta-pos':''}">${fmt(v,0)}</td>`;
+      const bv = bl?(bl['yr'+y]||0):v;
+      const chg = Math.abs(v-bv)>0.5;
+      if(v===0&&bv===0) return `<td class="num" style="color:var(--muted)">-</td>`;
+      return `<td class="num ${chg?'delta-pos':''}">${fmt(v)}</td>`;
     }).join('');
-    const totalChg = bl && Math.abs(l.total - bl.total) > 0.01;
-    return `<tr>
-      <td>${l.concept} <span style="font-size:0.68rem;color:${l.isVar?'#60a5fa':'#94a3b8'}">${l.isVar?'● var':'○ fijo'}</span></td>
-      <td class="num" style="font-size:0.75rem;color:var(--muted)">${l.unit}</td>
+    const totChg = bl&&Math.abs(l.total-bl.total)>0.5;
+    return `<tr class="${l.isVar?'cf-row-var':'cf-row-fixed'}">
+      <td>${l.concept}</td>
+      <td class="num" style="font-size:0.73rem;color:var(--muted)">${l.unit}</td>
       ${yrCells}
-      <td class="num" style="font-weight:700;color:${totalChg?'#f87171':'var(--sky)'}">${fmt(l.total,0)}</td>
+      <td class="num" style="font-weight:700;color:${totChg?'#fbbf24':'var(--sky)'}">${fmt(l.total)}</td>
     </tr>`;
   }).join('');
 
-  // Totals row
-  const totals = yrCols.map(y => lines.reduce((s,l)=>s+(l['yr'+y]||0),0));
-  const grandTotal = lines.reduce((s,l)=>s+l.total, 0);
+  // Total row
+  const totals = Array.from({length:hz+1},(_,y)=>lines.reduce((s,l)=>s+(l['yr'+y]||0),0));
+  const grand = lines.reduce((s,l)=>s+l.total,0);
   tbody.innerHTML += `<tr class="cf-total-row">
     <td colspan="2" style="font-family:'Bebas Neue',sans-serif;letter-spacing:1px">TOTAL ACUMULADO</td>
-    ${totals.map(t=>`<td class="num">$${fmt(t,0)}</td>`).join('')}
-    <td class="num">$${fmt(grandTotal,0)}</td>
+    ${totals.map(t=>`<td class="num">${fmt(t)}</td>`).join('')}
+    <td class="num">${fmt(grand)}</td>
   </tr>`;
 
   // NPV row
-  const npv = calcNPV(lines, cfParams.tasa, hz);
-  tbody.innerHTML += `<tr style="background:rgba(16,185,129,0.07)">
-    <td colspan="${2+hz+1}" style="font-size:0.75rem;color:var(--muted)">Valor Presente Neto (tasa ${cfParams.tasa}%)</td>
-    <td class="num" style="font-weight:700;color:#34d399">$${fmt(npv,0)}</td>
-  </tr>`;
-
-  // Update header
-  const yrHeaders = yrCols.map(y=>`<th class="num">Año ${y} ($)</th>`).join('');
-  const table = tbody.closest('table');
-  table.querySelector('thead tr').innerHTML =
-    `<th>Concepto</th><th class="num">Tarifa Unit.</th>${yrHeaders}<th class="num">Total ($)</th>`;
-}
-
-function renderCfCompareTable() {
-  const lines = buildCfLines(cfProvider, cfParams);
-  const baseLines = buildCfLines(cfProvider, CF_BASE_PARAMS);
-  const hz = cfParams.horizonte;
-  const baseHzLines = buildCfLines(cfProvider, {...CF_BASE_PARAMS, horizonte: hz});
-
-  const allConcepts = [...new Set([...baseHzLines.map(l=>l.concept), ...lines.map(l=>l.concept)])];
-  const tbody = document.getElementById('tbodyCfCompare');
-
-  tbody.innerHTML = allConcepts.map(c=>{
-    const bl = baseHzLines.find(l=>l.concept===c);
-    const sl = lines.find(l=>l.concept===c);
-    const bYr1 = bl ? (bl.yr1||0) : 0;
-    const sYr1 = sl ? (sl.yr1||0) : 0;
-    const bTotal = bl ? bl.total : 0;
-    const sTotal = sl ? sl.total : 0;
-    const deltaAmt = sYr1 - bYr1;
-    const deltaTot = sTotal - bTotal;
-    const deltaPct = bYr1!==0 ? (deltaAmt/bYr1*100) : (sYr1!==0 ? 100 : 0);
-    const noChange = Math.abs(deltaAmt) < 0.01;
-    const deltaCls = deltaAmt>0.01?'delta-pos':deltaAmt<-0.01?'delta-neg':'delta-zero';
-    return `<tr>
-      <td>${c}</td>
-      <td class="num">${bYr1 ? '$'+fmt(bYr1,0) : '-'}</td>
-      <td class="num ${noChange?'':'changed-cell'}">${sYr1 ? '$'+fmt(sYr1,0) : '-'}</td>
-      <td class="num ${deltaCls}">${noChange?'-':(deltaAmt>0?'+':'')+('$'+fmt(deltaAmt,0))}</td>
-      <td class="num ${deltaCls}">${noChange?'-':((deltaAmt>0?'+':'')+deltaPct.toFixed(1)+'%')}</td>
-      <td class="num">${bTotal ? '$'+fmt(bTotal,0) : '-'}</td>
-      <td class="num ${Math.abs(deltaTot)>0.01?'changed-cell':''}">${sTotal ? '$'+fmt(sTotal,0) : '-'}</td>
-    </tr>`;
-  }).join('');
-
-  // Summary row
-  const bGrand = baseHzLines.reduce((s,l)=>s+l.total,0);
-  const sGrand = lines.reduce((s,l)=>s+l.total,0);
-  const diff = sGrand - bGrand;
-  const diffCls = diff>0.01?'delta-pos':diff<-0.01?'delta-neg':'delta-zero';
-  tbody.innerHTML += `<tr class="cf-total-row">
-    <td>TOTAL</td>
-    <td class="num">-</td><td class="num">-</td><td class="num">-</td><td class="num">-</td>
-    <td class="num">$${fmt(bGrand,0)}</td>
-    <td class="num ${diffCls}">$${fmt(sGrand,0)} <span style="font-size:0.7rem">(${diff>=0?'+':''}${fmt(diff,0)})</span></td>
+  const npv = calcNPV(lines, CF_FIXED.tasa, hz);
+  tbody.innerHTML += `<tr style="background:rgba(22,163,74,0.06)">
+    <td colspan="${2+hz+1}" style="font-size:0.72rem;color:var(--muted)">Valor Presente Neto (tasa ${CF_FIXED.tasa}%)</td>
+    <td class="num" style="font-weight:700;color:#4ade80">${fmt(npv)}</td>
   </tr>`;
 }
 
+// ─ CF Charts
 function renderCashflowCharts() {
-  const hz = cfParams.horizonte;
-  const years = Array.from({length:hz}, (_,i)=>'Año '+(i+1));
+  const msgs = derivedMsj(cfSlider);
+  const baseMsgs = derivedMsj(CF_SLIDER_BASE);
+  const hz = CF_FIXED.horizonte;
+  const lines = buildCfLines(cfProvider, msgs, hz);
+  const baseLines = buildCfLines(cfProvider, baseMsgs, hz);
+  const years = Array.from({length:hz},(_,i)=>'Año '+(i+1));
 
-  // Cumulative cost chart for selected provider (base vs scenario)
-  const baseLines = buildCfLines(cfProvider, CF_BASE_PARAMS);
-  const scenLines = buildCfLines(cfProvider, cfParams);
-
-  let baseCumul = 0, scenCumul = 0;
-  const baseData = [], scenData = [];
-  for(let y=0; y<=hz; y++) {
-    baseCumul += baseLines.reduce((s,l)=>s+(l['yr'+y]||0),0);
-    scenCumul += scenLines.reduce((s,l)=>s+(l['yr'+y]||0),0);
-    if(y>0) { baseData.push(baseCumul); scenData.push(scenCumul); }
+  // Cumulative
+  let bCum=0, sCum=0;
+  const bData=[], sData=[];
+  for(let y=1;y<=hz;y++) {
+    bCum += baseLines.reduce((s,l)=>s+(l['yr'+y]||0),0);
+    sCum += lines.reduce((s,l)=>s+(l['yr'+y]||0),0);
+    bData.push(bCum); sData.push(sCum);
   }
-
+  const pColor = PROV_COLOR[cfProvider]||'rgba(59,130,246,0.85)';
   destroyChart('chartCfCumul');
   charts['chartCfCumul'] = new Chart(document.getElementById('chartCfCumul'), {
     type:'line',
-    data:{ labels:years,
-      datasets:[
-        { label:'Caso Base', data:baseData, borderColor:'rgba(245,158,11,0.9)', backgroundColor:'rgba(245,158,11,0.08)', borderWidth:2, pointRadius:4, fill:true, tension:0.2, borderDash:[6,3] },
-        { label:'Escenario', data:scenData, borderColor:PROV_COLOR[cfProvider]||'#3b82f6', backgroundColor:(PROV_COLOR[cfProvider]||'rgba(59,130,246,0.85)').replace('0.85','0.08'), borderWidth:3, pointRadius:5, fill:true, tension:0.2 },
-      ]
-    },
-    options:{ responsive:true, maintainAspectRatio:false,
-      plugins:{ legend:{labels:{color:'#94a3b8'}}, tooltip:{callbacks:{label:c=>c.dataset.label+': $'+fmt(c.raw)}} },
-      scales:{ y:{ticks:{callback:v=>'$'+fmt(v),color:'#94a3b8'},grid:{color:'rgba(255,255,255,0.05)'}},
-               x:{ticks:{color:'#94a3b8'},grid:{display:false}} } }
+    data:{labels:years,datasets:[
+      {label:'Caso Base',data:bData,borderColor:'rgba(245,194,0,0.8)',backgroundColor:'rgba(245,194,0,0.06)',borderWidth:2,borderDash:[6,4],pointRadius:4,fill:true,tension:0.2},
+      {label:'Escenario',data:sData,borderColor:pColor,backgroundColor:pColor.replace('0.85','0.07'),borderWidth:3,pointRadius:5,fill:true,tension:0.2},
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{labels:{color:'#7a95b0'}},tooltip:{callbacks:{label:c=>c.dataset.label+': $'+fmt(c.raw)}}},
+      scales:{y:{ticks:{callback:v=>'$'+fmt(v),color:'#7a95b0'},grid:{color:'rgba(255,255,255,0.04)'}},
+               x:{ticks:{color:'#7a95b0'},grid:{display:false}}}}
   });
 
-  // All-providers annual cost using current params
-  destroyChart('chartFlowAll');
-  const provAnnualData = BASE.providers.map(p=>{
-    const ls = buildCfLines(p.name, cfParams);
+  // All providers annual
+  const provData = BASE.providers.map(p=>{
+    const ls = buildCfLines(p.name, msgs, hz);
     return ls.reduce((s,l)=>s+(l.recurring||0),0);
   });
-  const barColors = BASE.providers.map(p=>PROV_COLOR[p.name]||'#94a3b8');
-  charts['chartFlowAll'] = new Chart(document.getElementById('chartFlowAll'), {
+  destroyChart('chartCfAllProv');
+  charts['chartCfAllProv'] = new Chart(document.getElementById('chartCfAllProv'), {
     type:'bar', indexAxis:'y',
-    data:{ labels:BASE.providers.map(p=>p.name),
-      datasets:[{label:'Costo Anual Recurrente ($)', data:provAnnualData, backgroundColor:barColors, borderRadius:6, borderSkipped:false}]
+    data:{labels:BASE.providers.map(p=>p.name),
+      datasets:[{label:'Costo Anual ($)',data:provData,
+        backgroundColor:BASE.providers.map(p=>p.name===cfProvider?PROV_COLOR[p.name]:(PROV_COLOR[p.name]||'#94a3b8').replace('0.85','0.4')),
+        borderRadius:6,borderSkipped:false}]
     },
-    options:{ responsive:true, maintainAspectRatio:false,
-      plugins:{ legend:{display:false}, tooltip:{callbacks:{label:c=>'$'+fmt(c.raw)}} },
-      scales:{ x:{ticks:{callback:v=>'$'+fmt(v),color:'#94a3b8'},grid:{color:'rgba(255,255,255,0.05)'}},
-               y:{ticks:{color:'#94a3b8'},grid:{display:false}} } }
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>'$'+fmt(c.raw)}}},
+      scales:{x:{ticks:{callback:v=>'$'+fmt(v),color:'#7a95b0'},grid:{color:'rgba(255,255,255,0.04)'}},
+               y:{ticks:{color:'#7a95b0'},grid:{display:false}}}}
   });
 }
 
-// ═══════════════════════════════════════════════
-//  VOLUME CHART PANE
-// ═══════════════════════════════════════════════
+// ════════════════════════════════════════════
+//  SUMMARY
+// ════════════════════════════════════════════
+function renderSummary() {
+  const sorted = [...BASE.providers].sort((a,b)=>a.costAnual-b.costAnual);
+  const best = sorted[0];
+  document.getElementById('hdr-best-annual').textContent = '$'+fmt(best.costAnual);
+  document.getElementById('hdr-best-name').textContent = best.name;
+
+  const kpis = [
+    {label:'Proveedores Evaluados',val:'6',sub:'Comparación completa',cls:''},
+    {label:'Clientes Telecobranza',val:'70,000',sub:'Volumen base del modelo',cls:''},
+    {label:'Proveedor Recomendado',val:best.name,sub:'Menor costo total 5 años',cls:'green'},
+    {label:'Costo Anual (mejor)',  val:'$'+fmt(best.costAnual),sub:'Promedio 5 años',cls:'green'},
+    {label:'Ahorro vs. Mayor Costo',val:'$'+fmt(sorted[sorted.length-1].costAnual-best.costAnual),sub:'vs. '+sorted[sorted.length-1].name+'/año',cls:'gold'},
+    {label:'VPN Mejor Opción',     val:'$'+fmt(best.vp5yr),sub:'Valor presente 5 años',cls:''},
+  ];
+  document.getElementById('summaryKpis').innerHTML = kpis.map(k=>`
+    <div class="kpi-card ${k.cls}"><div class="kpi-label">${k.label}</div>
+    <div class="kpi-value">${k.val}</div><div class="kpi-sub">${k.sub}</div></div>`).join('');
+
+  const rows = [...BASE.providers].sort((a,b)=>a.total5yr-b.total5yr);
+  document.getElementById('tbodyCostsBase').innerHTML = rows.map((p,i)=>`
+    <tr class="${i===0?'winner-row':''}">
+      <td>${provChip(p.name)} ${i===0?'<span class="winner-tag">MEJOR</span>':''}</td>
+      <td><span class="kpi-badge ${p.factLocal==='Sí'?'badge-green':'badge-red'}">${p.factLocal}</span></td>
+      <td class="num ${i===0?'best-cell':''}">${fmt(p.impl,2)}</td>
+      <td class="num ${i===0?'best-cell':''}">${fmt(p.soporte,2)}</td>
+      <td class="num ${i===0?'best-cell':''}">${fmtU(p.modIA)}</td>
+      <td class="num ${i===0?'best-cell':''}">${fmt(p.licencia,2)}</td>
+      <td class="num ${i===0?'best-cell':''}">${fmt(p.total5yr)}</td>
+      <td class="num ${i===0?'best-cell':''}">${fmt(p.vp5yr)}</td>
+      <td class="num ${i===0?'best-cell':''}">${fmt(p.costAnual)}</td>
+    </tr>`).join('');
+
+  document.getElementById('conclusionList').innerHTML = BASE.conclusions.map(c=>`
+    <div class="conclusion-item ${c.type}"><div class="ci-icon">${c.icon}</div><p>${c.text}</p></div>`).join('');
+}
+
+function renderSummaryCharts() {
+  const sorted = [...BASE.providers].sort((a,b)=>a.total5yr-b.total5yr);
+  destroyChart('chart5yr');
+  charts['chart5yr'] = new Chart(document.getElementById('chart5yr'),{
+    type:'bar',
+    data:{labels:sorted.map(p=>p.name),datasets:[{label:'Costo Total 5 Años',
+      data:sorted.map(p=>p.total5yr),
+      backgroundColor:sorted.map(p=>PROV_COLOR[p.name]||'#94a3b8'),
+      borderRadius:6,borderSkipped:false}]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>'$'+fmt(c.raw)}}},
+      scales:{y:{ticks:{callback:v=>'$'+fmt(v),color:'#7a95b0'},grid:{color:'rgba(255,255,255,0.04)'}},
+               x:{ticks:{color:'#7a95b0'},grid:{display:false}}}}
+  });
+  const sorted2=[...BASE.providers].sort((a,b)=>a.costAnual-b.costAnual);
+  destroyChart('chartAnnual');
+  charts['chartAnnual'] = new Chart(document.getElementById('chartAnnual'),{
+    type:'bar',indexAxis:'y',
+    data:{labels:sorted2.map(p=>p.name),datasets:[{label:'Costo Anual',
+      data:sorted2.map(p=>p.costAnual),
+      backgroundColor:sorted2.map(p=>PROV_COLOR[p.name]||'#94a3b8'),
+      borderRadius:6,borderSkipped:false}]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>'$'+fmt(c.raw)}}},
+      scales:{x:{ticks:{callback:v=>'$'+fmt(v),color:'#7a95b0'},grid:{color:'rgba(255,255,255,0.04)'}},
+               y:{ticks:{color:'#7a95b0'},grid:{display:false}}}}
+  });
+}
+
+// ════════════════════════════════════════════
+//  VOLUME CHART
+// ════════════════════════════════════════════
 function renderVolumeTable() {
-  const tbody = document.getElementById('tbodyVolume');
-  const colorMap = { 'Evoltis':'chip-evoltis','Bircle':'chip-bircle','Teleprom':'chip-teleprom',
-    'Quabum':'chip-quabund','Thinkchat IA':'chip-thinkchat','Thinkchat Sin IA':'chip-thinkchatsi' };
-  tbody.innerHTML = BASE.volumeData.map(r=>{
-    const vals = [r.evoltis,r.bircle,r.teleprom,r.quabum,r.thinkchatIA,r.thinkchatSin];
-    const minVal = Math.min(...vals);
-    const cells = vals.map(v=>`<td class="num ${v===minVal?'best-cell':''}">${fmt(v,1)}</td>`).join('');
-    return `<tr><td class="num">${fmt(r.convs)}</td>${cells}<td>${provChip(r.winner)}</td></tr>`;
+  document.getElementById('tbodyVolume').innerHTML = BASE.volumeData.map(r=>{
+    const vals=[r.evoltis,r.bircle,r.teleprom,r.quabum,r.thinkchatIA,r.thinkchatSin];
+    const mn=Math.min(...vals);
+    return `<tr><td class="num">${fmt(r.convs)}</td>
+      ${vals.map(v=>`<td class="num ${v===mn?'best-cell':''}">${fmt(v,1)}</td>`).join('')}
+      <td>${provChip(r.winner)}</td></tr>`;
   }).join('');
 }
-
 function renderVolumeChart() {
-  const labels = BASE.volumeData.map(r=>fmt(r.convs));
-  const sets = [
-    { label:'Evoltis',          key:'evoltis',     color:'rgba(239,68,68,0.85)' },
-    { label:'Bircle',           key:'bircle',      color:'rgba(245,158,11,0.85)' },
-    { label:'Teleprom',         key:'teleprom',    color:'rgba(16,185,129,0.85)' },
-    { label:'Quabum',           key:'quabum',      color:'rgba(167,139,250,0.85)' },
-    { label:'Thinkchat IA',     key:'thinkchatIA', color:'rgba(59,130,246,0.85)' },
-    { label:'Thinkchat Sin IA', key:'thinkchatSin',color:'rgba(20,184,166,0.85)' },
+  const sets=[
+    {label:'Evoltis',key:'evoltis',color:PROV_COLOR['Evoltis']},
+    {label:'Bircle',key:'bircle',color:PROV_COLOR['Bircle']},
+    {label:'Teleprom',key:'teleprom',color:PROV_COLOR['Teleprom']},
+    {label:'Quabum',key:'quabum',color:PROV_COLOR['Quabund']},
+    {label:'Thinkchat IA',key:'thinkchatIA',color:PROV_COLOR['Thinkchat']},
+    {label:'Thinkchat Sin IA',key:'thinkchatSin',color:PROV_COLOR['Thinkchat Sin IA']},
   ];
   destroyChart('chartVolume');
-  charts['chartVolume'] = new Chart(document.getElementById('chartVolume'), {
+  charts['chartVolume']=new Chart(document.getElementById('chartVolume'),{
     type:'line',
-    data:{ labels,
-      datasets: sets.map(s=>({
-        label:s.label, data:BASE.volumeData.map(r=>r[s.key]),
-        borderColor:s.color, backgroundColor:'transparent',
-        borderWidth:s.label==='Teleprom'?3:2,
-        pointRadius:s.label==='Teleprom'?6:3,
-        tension:0.3,
-        borderDash:s.label==='Thinkchat Sin IA'?[6,3]:[]
-      }))
+    data:{labels:BASE.volumeData.map(r=>fmt(r.convs)),
+      datasets:sets.map(s=>{
+        const isTele=s.label==='Teleprom';
+        return {label:s.label,data:BASE.volumeData.map(r=>r[s.key]),
+          borderColor:s.color,backgroundColor:'transparent',
+          borderWidth:isTele?3:2,pointRadius:isTele?6:3,tension:0.3,
+          borderDash:s.label==='Thinkchat Sin IA'?[6,3]:[]};
+      })
     },
-    options:{ responsive:true, maintainAspectRatio:false,
-      plugins:{ legend:{labels:{color:'#94a3b8',font:{size:11}}}, tooltip:{callbacks:{label:c=>c.dataset.label+': $'+fmt(c.raw)}} },
-      scales:{ y:{ticks:{callback:v=>'$'+fmt(v),color:'#94a3b8'},grid:{color:'rgba(255,255,255,0.05)'}},
-               x:{title:{display:true,text:'Conversaciones / mes',color:'#94a3b8'},ticks:{color:'#94a3b8'},grid:{display:false}} } }
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{labels:{color:'#7a95b0',font:{size:11}}},tooltip:{callbacks:{label:c=>c.dataset.label+': $'+fmt(c.raw)}}},
+      scales:{y:{ticks:{callback:v=>'$'+fmt(v),color:'#7a95b0'},grid:{color:'rgba(255,255,255,0.04)'}},
+               x:{title:{display:true,text:'Conversaciones / mes',color:'#7a95b0'},ticks:{color:'#7a95b0'},grid:{display:false}}}}
   });
 }
 
-// ═══════════════════════════════════════════════
-//  SENSITIVITY PANE
-// ═══════════════════════════════════════════════
-function calcMonthlyCost(p) {
-  const msgs = sens.totalMensajes;
-  const agents = sens.agentes;
-  const entrada = sens.msjEntranteMes;
+// ════════════════════════════════════════════
+//  SENSITIVITY (general monthly cost)
+// ════════════════════════════════════════════
+let sens = { totalMensajes:350000, agentes:66, msjEntranteMes:3000 };
+const BASE_SENS = {...sens};
 
-  const costs = {
-    'Evoltis':         p.modIA * msgs + 0.0113 * msgs + p.licencia * agents + p.mensajeEntrant * entrada,
-    'Bircle':          0.041 * msgs + 0.0113 * msgs,
-    'Teleprom':        p.modIA * msgs + 0.0113 * msgs + p.licencia * agents + p.mensajeEntrant * entrada + p.soporte,
-    'Quabund':         p.modIA * msgs * 0.2 + 0.0113 * msgs + p.licencia * agents,
-    'Thinkchat':       p.modIA * msgs * 0.2 + 0.0113 * msgs * 0.2 + p.licencia * agents,
-    'Thinkchat Sin IA':0.042 * msgs * 0.2 + 0.0113 * msgs * 0.2 + p.licencia * agents,
+function calcMonthlyCost(p, st) {
+  const msgs=st.totalMensajes, ag=st.agentes, ent=st.msjEntranteMes;
+  const c={
+    'Evoltis':p.modIA*msgs+0.0113*msgs+p.licencia*ag+p.mensajeEntrant*ent,
+    'Bircle':0.041*msgs+0.0113*msgs,
+    'Teleprom':p.modIA*msgs+0.0113*msgs+p.licencia*ag+p.mensajeEntrant*ent+p.soporte,
+    'Quabund':p.modIA*msgs*0.2+0.0113*msgs+p.licencia*ag,
+    'Thinkchat':p.modIA*msgs*0.2+0.0113*msgs*0.2+p.licencia*ag,
+    'Thinkchat Sin IA':0.042*msgs*0.2+0.0113*msgs*0.2+p.licencia*ag,
   };
-  return costs[p.name] || 0;
-}
-
-function calcBaseMonthlyCost(p) {
-  const msgs = BASE_SENS.totalMensajes;
-  const agents = BASE.assumptions.agentesTeleo;
-  const entrada = BASE_SENS.msjEntranteMes;
-  const costs = {
-    'Evoltis':         p.modIA * msgs + 0.0113 * msgs + p.licencia * agents + p.mensajeEntrant * entrada,
-    'Bircle':          0.041 * msgs + 0.0113 * msgs,
-    'Teleprom':        p.modIA * msgs + 0.0113 * msgs + p.licencia * agents + p.mensajeEntrant * entrada + p.soporte,
-    'Quabund':         p.modIA * msgs * 0.2 + 0.0113 * msgs + p.licencia * agents,
-    'Thinkchat':       p.modIA * msgs * 0.2 + 0.0113 * msgs * 0.2 + p.licencia * agents,
-    'Thinkchat Sin IA':0.042 * msgs * 0.2 + 0.0113 * msgs * 0.2 + p.licencia * agents,
-  };
-  return costs[p.name] || 0;
+  return c[p.name]||0;
 }
 
 function renderSensControls() {
-  const el = document.getElementById('sensControls');
-  const params = [
-    { key:'totalMensajes', label:'Total Mensajes / Mes', min:50000, max:700000, step:10000, base:350000, fmt:'#,###' },
-    { key:'agentes',       label:'Agentes (Telecobranzas)', min:20, max:200, step:5, base:66, fmt:'#' },
-    { key:'msjEntranteMes',label:'Mensajes Entrantes / Mes', min:500, max:10000, step:250, base:3000, fmt:'#,###' },
+  const defs=[
+    {key:'totalMensajes',label:'Total Mensajes/Mes',min:50000,max:700000,step:10000,base:350000},
+    {key:'agentes',label:'Agentes Telecobranzas',min:20,max:200,step:5,base:66},
+    {key:'msjEntranteMes',label:'Mensajes Entrantes/Mes',min:500,max:10000,step:250,base:3000},
   ];
-  el.innerHTML = params.map(p=>`
-    <div class="sens-item">
-      <label>${p.label}</label>
-      <div class="val-display">
-        <span id="sv-${p.key}">${fmt(sens[p.key])}</span>
-        <span class="base-tag" id="btag-${p.key}">BASE: ${fmt(p.base)}</span>
-        <span class="changed-tag" id="ctag-${p.key}">≠ BASE</span>
+  document.getElementById('sensControls').innerHTML = defs.map(d=>{
+    const changed = sens[d.key]!==d.base;
+    return `<div style="display:flex;flex-direction:column;gap:0.4rem">
+      <div style="display:flex;justify-content:space-between;align-items:center;font-size:0.68rem;color:var(--muted);text-transform:uppercase;letter-spacing:1px">
+        ${d.label}
+        <span class="tag-base ${changed?'hide':''}" id="sbtag-${d.key}">BASE: ${fmt(d.base)}</span>
+        <span class="tag-changed ${changed?'show':''}" id="sctag-${d.key}">≠ BASE</span>
       </div>
-      <input type="range" min="${p.min}" max="${p.max}" step="${p.step}"
-             value="${sens[p.key]}" id="rng-${p.key}"
-             oninput="updateSens('${p.key}', this.value, ${p.base})">
-    </div>`).join('');
+      <div style="display:flex;align-items:center;gap:0.6rem">
+        <input type="range" min="${d.min}" max="${d.max}" step="${d.step}" value="${sens[d.key]}"
+               style="flex:1;--pct:${sliderPct(sens[d.key],d.min,d.max)}"
+               oninput="updateSens('${d.key}',this.value,${d.base})">
+        <span style="font-weight:700;min-width:60px;text-align:right" id="sval-${d.key}">${fmt(sens[d.key])}</span>
+      </div>
+    </div>`;
+  }).join('');
 }
 
-function updateSens(key, val, base) {
-  sens[key] = parseFloat(val);
-  document.getElementById('sv-'+key).textContent = fmt(sens[key]);
-  const changed = sens[key] !== base;
-  document.getElementById('btag-'+key).style.display = changed ? 'none' : 'inline';
-  document.getElementById('ctag-'+key).style.display = changed ? 'inline' : 'none';
+function updateSens(key,val,base) {
+  sens[key]=parseFloat(val);
+  document.getElementById('sval-'+key).textContent=fmt(sens[key]);
+  const chg=sens[key]!==base;
+  document.getElementById('sbtag-'+key).classList.toggle('hide',chg);
+  document.getElementById('sctag-'+key).classList.toggle('show',chg);
+  document.getElementById('rng-'+key)||null;
+  const rng = document.querySelector(`#sensControls input[oninput*="${key}"]`);
+  if(rng) rng.style.setProperty('--pct', sliderPct(sens[key],parseFloat(rng.min),parseFloat(rng.max)));
+  renderSensCharts();
+}
+
+function resetToBase() {
+  sens={...BASE_SENS};
+  renderSensControls();
   renderSensCharts();
 }
 
 function renderSensCharts() {
-  const baseVals   = BASE.providers.map(p => calcBaseMonthlyCost(p));
-  const scenVals   = BASE.providers.map(p => calcMonthlyCost(p));
-  const names      = BASE.providers.map(p => p.name);
-  const colorMap   = ['rgba(239,68,68,0.8)','rgba(245,158,11,0.8)','rgba(16,185,129,0.8)','rgba(167,139,250,0.8)','rgba(59,130,246,0.8)','rgba(20,184,166,0.8)'];
-
+  const bv=BASE.providers.map(p=>calcMonthlyCost(p,BASE_SENS));
+  const sv=BASE.providers.map(p=>calcMonthlyCost(p,sens));
   destroyChart('chartSensBar');
-  charts['chartSensBar'] = new Chart(document.getElementById('chartSensBar'), {
+  charts['chartSensBar']=new Chart(document.getElementById('chartSensBar'),{
     type:'bar',
-    data:{ labels:names,
-      datasets:[
-        { label:'Caso Base', data:baseVals, backgroundColor:colorMap.map(c=>c.replace('0.8','0.35')), borderRadius:6,borderSkipped:false },
-        { label:'Escenario', data:scenVals, backgroundColor:colorMap, borderRadius:6,borderSkipped:false },
-      ]
-    },
-    options:{ responsive:true, maintainAspectRatio:false,
-      plugins:{ legend:{labels:{color:'#94a3b8'}}, tooltip:{callbacks:{label:c=>c.dataset.label+': $'+fmt(c.raw)}} },
-      scales:{ y:{ticks:{callback:v=>'$'+fmt(v),color:'#94a3b8'},grid:{color:'rgba(255,255,255,0.05)'}},
-               x:{ticks:{color:'#94a3b8'},grid:{display:false}} } }
+    data:{labels:BASE.providers.map(p=>p.name),datasets:[
+      {label:'Caso Base',data:bv,backgroundColor:BASE.providers.map(p=>(PROV_COLOR[p.name]||'#94a3b8').replace('0.85','0.3')),borderRadius:6,borderSkipped:false},
+      {label:'Escenario',data:sv,backgroundColor:BASE.providers.map(p=>PROV_COLOR[p.name]||'#94a3b8'),borderRadius:6,borderSkipped:false},
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{labels:{color:'#7a95b0'}},tooltip:{callbacks:{label:c=>c.dataset.label+': $'+fmt(c.raw)}}},
+      scales:{y:{ticks:{callback:v=>'$'+fmt(v),color:'#7a95b0'},grid:{color:'rgba(255,255,255,0.04)'}},
+               x:{ticks:{color:'#7a95b0'},grid:{display:false}}}}
   });
-
-  // Table
-  const tbody = document.getElementById('tbodySensResult');
-  tbody.innerHTML = BASE.providers.map((p,i)=>{
-    const bv = baseVals[i], sv = scenVals[i];
-    const delta = sv - bv;
-    const pct = bv>0 ? (delta/bv*100).toFixed(1) : '0.0';
-    const cls = delta>0 ? 'badge-red' : delta<0 ? 'badge-green' : 'badge-gold';
-    const sign = delta>=0 ? '+' : '';
-    return `<tr>
-      <td>${provChip(p.name)}</td>
-      <td class="num base-cell">$${fmt(bv,0)}</td>
-      <td class="num ${delta!==0?'changed-cell':''}">$${fmt(sv,0)}</td>
-      <td class="num"><span class="kpi-badge ${cls}">${sign}${pct}%</span></td>
-    </tr>`;
+  document.getElementById('tbodySensResult').innerHTML=BASE.providers.map((p,i)=>{
+    const b=bv[i],s=sv[i],d=s-b,pct=b>0?(d/b*100).toFixed(1):'0.0';
+    return `<tr><td>${provChip(p.name)}</td>
+      <td class="num base-cell">$${fmt(b)}</td>
+      <td class="num ${Math.abs(d)>0.5?'changed-cell':''}">$${fmt(s)}</td>
+      <td class="num ${d>0.5?'delta-pos':d<-0.5?'delta-neg':''}">${d>=0?'+':''}${pct}%</td></tr>`;
   }).join('');
 }
 
-function resetToBase() {
-  sens = { ...BASE_SENS };
-  const params = ['totalMensajes','agentes','msjEntranteMes'];
-  const bases  = [350000, 66, 3000];
-  params.forEach((k,i)=>{
-    const el = document.getElementById('rng-'+k);
-    if(el) {
-      el.value = bases[i];
-      document.getElementById('sv-'+k).textContent = fmt(bases[i]);
-      document.getElementById('btag-'+k).style.display = 'inline';
-      document.getElementById('ctag-'+k).style.display = 'none';
-    }
-  });
-  renderSensCharts();
-}
-
-// ═══════════════════════════════════════════════
-//  QUALITATIVE PANE
-// ═══════════════════════════════════════════════
+// ════════════════════════════════════════════
+//  QUALITATIVE
+// ════════════════════════════════════════════
 function renderQualitative() {
-  const q = BASE.qualitative;
-  const el = document.getElementById('qualGrid');
-  let html = `<div class="qual-header">Criterio</div>`;
-  q.providers.forEach(p=>{ html += `<div class="qual-header" style="text-align:center">${p}</div>`; });
-
+  const q=BASE.qualitative;
+  let html=`<div class="qual-header">Criterio</div>`;
+  q.providers.forEach(p=>{ html+=`<div class="qual-header" style="text-align:center">${p}</div>`; });
   q.criteria.forEach((c,ri)=>{
-    html += `<div class="qual-row-label">${c}</div>`;
-    q.providers.forEach((_,ci)=>{
-      html += `<div class="qual-cell">${q.data[ri][ci]}</div>`;
-    });
+    html+=`<div class="qual-row-label">${c}</div>`;
+    q.providers.forEach((_,ci)=>{ html+=`<div class="qual-cell">${q.data[ri][ci]}</div>`; });
   });
-
-  // Scores row
-  html += `<div class="qual-header" style="color:var(--gold2)">Puntuación (1-5)</div>`;
+  html+=`<div class="qual-header" style="color:var(--yellow2)">Puntuación</div>`;
   q.providers.forEach((_,ci)=>{
-    const total = q.scores.reduce((s,r)=>s+r[ci],0);
-    const avg = (total/q.scores.length).toFixed(1);
-    const stars = '★'.repeat(Math.round(avg)) + '☆'.repeat(5-Math.round(avg));
-    html += `<div class="qual-cell" style="text-align:center">
-      <div class="stars">${stars}</div>
-      <div style="font-weight:700;color:var(--gold2);margin-top:2px">${avg}/5</div>
-    </div>`;
+    const avg=(q.scores.reduce((s,r)=>s+r[ci],0)/q.scores.length).toFixed(1);
+    const stars='★'.repeat(Math.round(avg))+'☆'.repeat(5-Math.round(avg));
+    html+=`<div class="qual-cell" style="text-align:center"><div class="stars">${stars}</div><div style="font-weight:700;color:var(--yellow2)">${avg}/5</div></div>`;
   });
-  el.innerHTML = html;
+  document.getElementById('qualGrid').innerHTML=html;
 }
-
 function renderRadarChart() {
-  const q = BASE.qualitative;
-  const colorMap = ['rgba(239,68,68,.75)','rgba(245,158,11,.75)','rgba(16,185,129,.75)','rgba(167,139,250,.75)','rgba(59,130,246,.75)'];
+  const q=BASE.qualitative;
+  const colors=['rgba(220,38,38,.75)','rgba(245,158,11,.75)','rgba(22,163,74,.75)','rgba(139,92,246,.75)','rgba(59,130,246,.75)'];
   destroyChart('chartRadar');
-  charts['chartRadar'] = new Chart(document.getElementById('chartRadar'), {
+  charts['chartRadar']=new Chart(document.getElementById('chartRadar'),{
     type:'radar',
-    data:{ labels:q.criteria,
-      datasets: q.providers.map((p,i)=>({
-        label:p, data:q.scores.map(r=>r[i]),
-        borderColor:colorMap[i], backgroundColor:colorMap[i].replace('.75','.12'),
-        borderWidth:2, pointRadius:4
-      }))
-    },
-    options:{ responsive:true, maintainAspectRatio:false,
-      plugins:{ legend:{labels:{color:'#94a3b8',font:{size:11}}} },
-      scales:{ r:{min:0,max:5, ticks:{stepSize:1,color:'#94a3b8',backdropColor:'transparent'},
-        angleLines:{color:'rgba(255,255,255,0.1)'}, grid:{color:'rgba(255,255,255,0.08)'},
-        pointLabels:{color:'#cbd5e1',font:{size:11}} } }
-    }
+    data:{labels:q.criteria,datasets:q.providers.map((p,i)=>{
+      return {label:p,data:q.scores.map(r=>r[i]),
+        borderColor:colors[i],backgroundColor:colors[i].replace('.75','.1'),borderWidth:2,pointRadius:4};
+    })},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{labels:{color:'#7a95b0',font:{size:11}}}},
+      scales:{r:{min:0,max:5,ticks:{stepSize:1,color:'#7a95b0',backdropColor:'transparent'},
+        angleLines:{color:'rgba(255,255,255,0.08)'},grid:{color:'rgba(255,255,255,0.07)'},
+        pointLabels:{color:'#c8d4e0',font:{size:11}}}}}
   });
 }
 
-// ═══════════════════════════════════════════════
+// ════════════════════════════════════════════
 //  COSTS PANE
-// ═══════════════════════════════════════════════
+// ════════════════════════════════════════════
 function renderCosts() {
-  // Monthly fixed totals per provider
-  const fixedByProv = {};
-  BASE.providers.forEach(p=>fixedByProv[p.name]=0);
-  BASE.monthlyFixed.forEach(r=>{ fixedByProv[r.prov] = (fixedByProv[r.prov]||0) + r.total; });
-
-  // Monthly var totals per provider
-  const varByProv = {};
-  BASE.providers.forEach(p=>varByProv[p.name]=0);
-  BASE.monthlyVar.forEach(r=>{ varByProv[r.prov] = (varByProv[r.prov]||0) + r.total; });
-
-  // KPI cards for total monthly
-  const kpiEl = document.getElementById('monthlyCostKpis');
-  kpiEl.innerHTML = BASE.providers.map(p=>{
-    const tot = (fixedByProv[p.name]||0) + (varByProv[p.name]||0);
+  const fp={}, vp={};
+  BASE.providers.forEach(p=>{fp[p.name]=0;vp[p.name]=0;});
+  BASE.monthlyFixed.forEach(r=>{fp[r.prov]=(fp[r.prov]||0)+r.total;});
+  BASE.monthlyVar.forEach(r=>{vp[r.prov]=(vp[r.prov]||0)+r.total;});
+  document.getElementById('monthlyCostKpis').innerHTML=BASE.providers.map(p=>{
+    const tot=(fp[p.name]||0)+(vp[p.name]||0);
     return `<div class="kpi-card"><div class="kpi-label">${p.name}</div>
-      <div class="kpi-value" style="font-size:1.4rem">$${fmt(tot,0)}</div>
+      <div class="kpi-value" style="font-size:1.35rem">$${fmt(tot)}</div>
       <div class="kpi-sub">Costo mensual total</div></div>`;
   }).join('');
-
-  // Table fixed
-  const tbody = document.getElementById('tbodyMonthlyFixed');
-  tbody.innerHTML = BASE.monthlyFixed.map(r=>`
+  document.getElementById('tbodyMonthlyFixed').innerHTML=BASE.monthlyFixed.map(r=>`
     <tr><td>${provChip(r.prov)}</td><td>${r.concept}</td>
-    <td class="num">${r.qty?fmt(r.qty):'-'}</td>
-    <td class="num">${r.unit?fmt(r.unit,2):'-'}</td>
+    <td class="num">${r.qty?fmt(r.qty):'-'}</td><td class="num">${r.unit?fmt(r.unit,2):'-'}</td>
     <td class="num" style="font-weight:600">$${fmt(r.total,2)}</td></tr>`).join('');
-
-  // Table var
-  const tbodyV = document.getElementById('tbodyMonthlyVar');
-  tbodyV.innerHTML = BASE.monthlyVar.map(r=>`
+  document.getElementById('tbodyMonthlyVar').innerHTML=BASE.monthlyVar.map(r=>`
     <tr><td>${provChip(r.prov)}</td><td>${r.concept}</td>
-    <td class="num">${fmt(r.qty)}</td>
-    <td class="num">${fmtD(r.unit)}</td>
+    <td class="num">${fmt(r.qty)}</td><td class="num">${fmtU(r.unit)}</td>
     <td class="num" style="font-weight:600">$${fmt(r.total,2)}</td></tr>`).join('');
 }
-
 function renderCostCharts() {
-  const fixedByProv = {};
-  const varByProv = {};
-  BASE.providers.forEach(p=>{ fixedByProv[p.name]=0; varByProv[p.name]=0; });
-  BASE.monthlyFixed.forEach(r=>{ fixedByProv[r.prov]=(fixedByProv[r.prov]||0)+r.total; });
-  BASE.monthlyVar.forEach(r=>{ varByProv[r.prov]=(varByProv[r.prov]||0)+r.total; });
-
-  const names = BASE.providers.map(p=>p.name);
-  const colorMap = ['rgba(239,68,68,0.8)','rgba(245,158,11,0.8)','rgba(16,185,129,0.8)','rgba(167,139,250,0.8)','rgba(59,130,246,0.8)','rgba(20,184,166,0.8)'];
-
+  const fp={},vp={};
+  BASE.providers.forEach(p=>{fp[p.name]=0;vp[p.name]=0;});
+  BASE.monthlyFixed.forEach(r=>{fp[r.prov]=(fp[r.prov]||0)+r.total;});
+  BASE.monthlyVar.forEach(r=>{vp[r.prov]=(vp[r.prov]||0)+r.total;});
+  const names=BASE.providers.map(p=>p.name);
+  const colors=BASE.providers.map(p=>PROV_COLOR[p.name]||'#94a3b8');
   destroyChart('chartMonthlyFixed');
-  charts['chartMonthlyFixed'] = new Chart(document.getElementById('chartMonthlyFixed'), {
+  charts['chartMonthlyFixed']=new Chart(document.getElementById('chartMonthlyFixed'),{
     type:'doughnut',
-    data:{ labels:names, datasets:[{data:names.map(n=>fixedByProv[n]||0), backgroundColor:colorMap, borderWidth:2, borderColor:'#0a1628'}] },
-    options:{ responsive:true, maintainAspectRatio:false,
-      plugins:{ legend:{position:'bottom',labels:{color:'#94a3b8',font:{size:11}}}, tooltip:{callbacks:{label:c=>c.label+': $'+fmt(c.raw)}} } }
+    data:{labels:names,datasets:[{data:names.map(n=>fp[n]||0),backgroundColor:colors,borderWidth:2,borderColor:'#05111f'}]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{position:'bottom',labels:{color:'#7a95b0',font:{size:11}}},tooltip:{callbacks:{label:c=>c.label+': $'+fmt(c.raw)}}}},
   });
-
   destroyChart('chartMonthlyVar');
-  charts['chartMonthlyVar'] = new Chart(document.getElementById('chartMonthlyVar'), {
+  charts['chartMonthlyVar']=new Chart(document.getElementById('chartMonthlyVar'),{
     type:'doughnut',
-    data:{ labels:names, datasets:[{data:names.map(n=>varByProv[n]||0), backgroundColor:colorMap, borderWidth:2, borderColor:'#0a1628'}] },
-    options:{ responsive:true, maintainAspectRatio:false,
-      plugins:{ legend:{position:'bottom',labels:{color:'#94a3b8',font:{size:11}}}, tooltip:{callbacks:{label:c=>c.label+': $'+fmt(c.raw)}} } }
+    data:{labels:names,datasets:[{data:names.map(n=>vp[n]||0),backgroundColor:colors,borderWidth:2,borderColor:'#05111f'}]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{position:'bottom',labels:{color:'#7a95b0',font:{size:11}}},tooltip:{callbacks:{label:c=>c.label+': $'+fmt(c.raw)}}}},
   });
 }
 
-// ═══════════════════════════════════════════════
-//  EXCEL UPLOAD
-// ═══════════════════════════════════════════════
+// ════════════════════════════════════════════
+//  TABS
+// ════════════════════════════════════════════
+function switchTab(id) {
+  document.querySelectorAll('.pane').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('pane-'+id).classList.add('active');
+  const map=['summary','cashflow','chart','sensitivity','qualitative','costs'];
+  document.querySelectorAll('.tab')[map.indexOf(id)]?.classList.add('active');
+  setTimeout(()=>renderTabCharts(id),60);
+}
+function renderTabCharts(id) {
+  if(id==='summary')     { renderSummaryCharts(); }
+  if(id==='cashflow')    { renderCashflowCharts(); renderCfKpis(); renderCfTable(); }
+  if(id==='chart')       { renderVolumeChart(); }
+  if(id==='sensitivity') { renderSensCharts(); }
+  if(id==='qualitative') { renderRadarChart(); }
+  if(id==='costs')       { renderCostCharts(); }
+}
+
+// ════════════════════════════════════════════
+//  UPLOAD & RESET
+// ════════════════════════════════════════════
 function handleUpload(e) {
-  const file = e.target.files[0];
-  if(!file) return;
-  const reader = new FileReader();
-  reader.onload = evt => {
-    try {
-      const wb = XLSX.read(evt.target.result, {type:'array'});
-      document.getElementById('uploadBanner').innerHTML =
-        `✅ Datos cargados desde: <span>${file.name}</span>. Los gráficos reflejan el archivo cargado.`;
-      // You can extend this to parse and update BASE with wb data
-    } catch(err) {
-      document.getElementById('uploadBanner').innerHTML = `⚠️ Error al leer el archivo: ${err.message}`;
-    }
+  const file=e.target.files[0]; if(!file) return;
+  const reader=new FileReader();
+  reader.onload=evt=>{
+    try { XLSX.read(evt.target.result,{type:'array'});
+      document.getElementById('uploadBanner').innerHTML=`✅ Datos cargados desde: <span>${file.name}</span>.`;
+    } catch(err) { document.getElementById('uploadBanner').innerHTML=`⚠️ Error: ${err.message}`; }
   };
   reader.readAsArrayBuffer(file);
 }
+function resetAll() { resetCfSliders(); resetToBase(); }
 
-// ═══════════════════════════════════════════════
+// ════════════════════════════════════════════
 //  INIT
-// ═══════════════════════════════════════════════
+// ════════════════════════════════════════════
 function init() {
   renderSummary();
-  renderCashflow();
+  renderCfProvBtns();
+  const p=BASE.providers.find(x=>x.name===cfProvider);
+  if(p) document.getElementById('cfFactLabel').textContent=p.factLocal;
   renderVolumeTable();
   renderSensControls();
   renderQualitative();
   renderCosts();
-  // Initial charts for active tab
-  setTimeout(()=>{ renderSummaryCharts(); }, 100);
+  setTimeout(()=>{
+    renderSummaryCharts();
+    renderCfKpis(); renderCfTable(); renderCashflowCharts();
+    // Position base markers after DOM layout
+    positionBaseMarker('rng-clientes','bm-clientes',70000,10000,200000);
+    positionBaseMarker('rng-msjxcli','bm-msjxcli',5,1,20);
+  },120);
+  window.addEventListener('resize',()=>{
+    positionBaseMarker('rng-clientes','bm-clientes',70000,10000,200000);
+    positionBaseMarker('rng-msjxcli','bm-msjxcli',5,1,20);
+  });
 }
-
-document.addEventListener('DOMContentLoaded', init);
+document.addEventListener('DOMContentLoaded',init);
 </script>
 </body>
 </html>
