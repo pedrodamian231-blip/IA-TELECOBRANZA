@@ -283,17 +283,24 @@ input[type=range]::-moz-range-thumb {
 
 /* Base marker line */
 .base-marker {
-  position:absolute; bottom:0; transform:translateX(-50%);
+  position:absolute;
+  /* Precise thumb-aware positioning: thumb=20px, so left = 10px + pct*(100%-20px) */
+  left: calc( 10px + var(--base-pct, 0.3158) * (100% - 20px) );
+  bottom:0;
+  transform:translateX(-50%);
   display:flex; flex-direction:column; align-items:center; gap:0;
   pointer-events:none;
+  z-index:2;
 }
 .base-marker-line {
-  width:2px; height:14px;
-  background:var(--accent); border-radius:1px;
+  width:2px; height:18px;
+  background:var(--accent); border-radius:2px;
+  box-shadow: 0 0 5px rgba(196,30,30,0.7);
 }
 .base-marker-label {
-  font-size:0.6rem; font-weight:700; color:var(--accent);
-  white-space:nowrap; margin-top:1px; letter-spacing:0.5px;
+  font-size:0.58rem; font-weight:700; color:var(--accent);
+  white-space:nowrap; margin-top:2px; letter-spacing:0.5px;
+  background:rgba(196,30,30,0.15); padding:1px 5px; border-radius:3px;
 }
 
 /* Base/changed tags */
@@ -461,9 +468,9 @@ input[type=range]::-moz-range-thumb {
             <span class="slider-current" id="val-clientes">70,000</span>
             <span class="slider-unit">clientes</span>
           </div>
-          <div class="slider-track-wrap">
+          <div class="slider-track-wrap" style="--base-pct:0.315789">
             <input type="range" id="rng-clientes" min="10000" max="200000" step="5000" value="70000"
-                   style="--pct:33.33%"
+                   style="--pct:31.58%"
                    oninput="updateSlider('clientes', this.value)">
             <div class="base-marker" id="bm-clientes">
               <div class="base-marker-line"></div>
@@ -488,7 +495,7 @@ input[type=range]::-moz-range-thumb {
             <span class="slider-current" id="val-msjxcli">5</span>
             <span class="slider-unit">mensajes / cliente</span>
           </div>
-          <div class="slider-track-wrap">
+          <div class="slider-track-wrap" style="--base-pct:0.210526">
             <input type="range" id="rng-msjxcli" min="1" max="20" step="1" value="5"
                    style="--pct:21.05%"
                    oninput="updateSlider('msjxcli', this.value)">
@@ -652,7 +659,7 @@ const BASE = {
     {name:'Teleprom',        impl:350,    soporte:250,    modIA:0.0114, msjUtil:0.0113,licencia:15,   mensajeEntrant:0.0113,factLocal:'Sí',total5yr:191924,  vp5yr:141946.55,costAnual:28389.31},
     {name:'Quabund',         impl:3975,   soporte:0,      modIA:0.12,   msjUtil:0.0113,licencia:15,   mensajeEntrant:0,   factLocal:'Sí', total5yr:627435,  vp5yr:464698.85,costAnual:92939.77},
     {name:'Thinkchat',       impl:1600,   soporte:0,      modIA:0.06,   msjUtil:0.0113,licencia:15,   mensajeEntrant:0,   factLocal:'Sí', total5yr:360460,  vp5yr:266811.63,costAnual:53362.33},
-    {name:'Thinkchat Sin IA',impl:1600,   soporte:0,      modIA:0.042,  msjUtil:0.1299,licencia:20,   mensajeEntrant:0,   factLocal:'Sí', total5yr:304660,  vp5yr:225565.42,costAnual:45113.08},
+    {name:'Thinkchat Sin IA',impl:1600,   soporte:0,      modIA:0,      msjUtil:0.1299,licencia:20,   mensajeEntrant:0,   factLocal:'Sí', total5yr:304660,  vp5yr:225565.42,costAnual:45113.08},
   ],
   volumeData:[
     {convs:3000, evoltis:6562, bircle:3600, teleprom:363.5,quabum:1380, thinkchatIA:300, thinkchatSin:200, winner:'Thinkchat Sin IA'},
@@ -777,7 +784,7 @@ function buildCfLines(provName, msgs, hz) {
     let concept = 'Módulo IA por Conversación';
     if(provName==='Quabund') { rec=p.modIA*convYr*0.20; concept='Módulo IA (est. 20% conv.)'; }
     if(provName==='Thinkchat') { rec=p.modIA*clientesYr; concept='Módulo IA por Conversación'; }
-    if(provName==='Thinkchat Sin IA') { rec=0.042*clientesYr; concept='Módulo IA por Conversación'; }
+    if(provName==='Thinkchat Sin IA') { rec=0; concept='Módulo IA por Conversación'; }
     lines.push({concept, unit:fmtU(p.modIA)+'/conv', yr0:0, recurring:rec, isVar:true});
   }
 
@@ -786,9 +793,7 @@ function buildCfLines(provName, msgs, hz) {
   const metaRec = 0.0113 * metaVol;
   lines.push({concept:'Mensajes Meta (Utilidad)', unit:'0.0113/msj', yr0:0, recurring:metaRec, isVar:true});
 
-  // Uso IA por msj (Thinkchat Sin IA)
-  if(provName==='Thinkchat Sin IA' && p.msjUtil>0)
-    lines.push({concept:'Uso IA por Mensaje', unit:fmtU(p.msjUtil)+'/msj', yr0:0, recurring:p.msjUtil*convYr*0.20, isVar:true});
+  // Uso IA por Mensaje: no aplica para Thinkchat Sin IA (msjUtil no se cobra)
 
   // Licencia
   if(p.licencia>0)
@@ -819,17 +824,7 @@ function calcNPV(lines, tasa, hz) {
 // ─ Slider position % for CSS custom property
 function sliderPct(val, min, max) { return (((val-min)/(max-min))*100).toFixed(2)+'%'; }
 
-// ─ Base marker pixel position
-function positionBaseMarker(sliderId, markerId, baseVal, min, max) {
-  const slider = document.getElementById(sliderId);
-  const marker = document.getElementById(markerId);
-  if(!slider||!marker) return;
-  const pct = (baseVal - min) / (max - min);
-  const w = slider.offsetWidth;
-  const thumbHalfW = 10;
-  const pos = thumbHalfW + pct * (w - 2*thumbHalfW);
-  marker.style.left = pos + 'px';
-}
+// Base markers now positioned via CSS --base-pct variable — no JS needed
 
 function updateSlider(key, rawVal) {
   const val = parseFloat(rawVal);
@@ -1169,7 +1164,7 @@ function calcMonthlyCost(p, st) {
     'Teleprom':p.modIA*msgs+0.0113*msgs+p.licencia*ag+p.mensajeEntrant*ent+p.soporte,
     'Quabund':p.modIA*msgs*0.2+0.0113*msgs+p.licencia*ag,
     'Thinkchat':p.modIA*msgs*0.2+0.0113*msgs*0.2+p.licencia*ag,
-    'Thinkchat Sin IA':0.042*msgs*0.2+0.0113*msgs*0.2+p.licencia*ag,
+    'Thinkchat Sin IA':0.0113*msgs*0.2+p.licencia*ag,
   };
   return c[p.name]||0;
 }
@@ -1376,13 +1371,8 @@ function init() {
   setTimeout(()=>{
     renderSummaryCharts();
     try { renderCashflowCharts(); } catch(e){}
-    positionBaseMarker('rng-clientes','bm-clientes',70000,10000,200000);
-    positionBaseMarker('rng-msjxcli','bm-msjxcli',5,1,20);
   },150);
-  window.addEventListener('resize',()=>{
-    positionBaseMarker('rng-clientes','bm-clientes',70000,10000,200000);
-    positionBaseMarker('rng-msjxcli','bm-msjxcli',5,1,20);
-  });
+  
 }
 document.addEventListener('DOMContentLoaded',init);
 </script>
