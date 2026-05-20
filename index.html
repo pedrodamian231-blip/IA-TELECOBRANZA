@@ -705,7 +705,7 @@ const BASE = {
     {prov:'Thinkchat',concept:'Módulo IA por Conversación',qty:70000,unit:0.06,total:4200},
     {prov:'Thinkchat',concept:'Licencia',qty:66,unit:15,total:990},
     {prov:'Thinkchat Sin IA',concept:'Msj Meta (Utilidad)',qty:70000,unit:0.0113,total:791},
-    {prov:'Thinkchat Sin IA',concept:'Módulo IA por Conversación',qty:70000,unit:0.04,total:2800},
+    {prov:'Thinkchat Sin IA',concept:'Módulo IA por Conversación',qty:70000,unit:0,total:0},
     {prov:'Thinkchat Sin IA',concept:'Licencia',qty:66,unit:20,total:1320},
   ],
   conclusions:[
@@ -760,6 +760,9 @@ function buildCfLines(provName, msgs, hz) {
   const ag = CF_FIXED.agentes;
   const ent = CF_FIXED.msjEntranteMes;
   const convYr = msgs * 12;
+  // Thinkchat uses clientes (msgs/msjxcli) as volume base, not totalMsgs
+  // From Excel: 0.042 * 70000 * 12 = 35280 (uses clientes, not 350000 msgs)
+  const clientesYr = Math.round(msgs / 5) * 12; // derive clients from msgs using base ratio
   const lines = [];
 
   if(p.impl>0)
@@ -772,13 +775,15 @@ function buildCfLines(provName, msgs, hz) {
   if(p.modIA>0) {
     let rec = p.modIA * convYr;
     let concept = 'Módulo IA por Conversación';
-    if(provName==='Quabund'||provName==='Thinkchat') { rec=p.modIA*convYr*0.20; concept='Módulo IA (est. 20% conv.)'; }
-    if(provName==='Thinkchat Sin IA') { rec=0.042*convYr*0.20; concept='Módulo IA por Conversación'; }
+    if(provName==='Quabund') { rec=p.modIA*convYr*0.20; concept='Módulo IA (est. 20% conv.)'; }
+    if(provName==='Thinkchat') { rec=p.modIA*clientesYr; concept='Módulo IA por Conversación'; }
+    if(provName==='Thinkchat Sin IA') { rec=0.042*clientesYr; concept='Módulo IA por Conversación'; }
     lines.push({concept, unit:fmtU(p.modIA)+'/conv', yr0:0, recurring:rec, isVar:true});
   }
 
-  // Meta utilidad
-  const metaRec = 0.0113 * convYr;
+  // Meta utilidad - Thinkchat uses clientes volume, others use totalMsgs
+  const metaVol = (provName==='Thinkchat'||provName==='Thinkchat Sin IA') ? clientesYr : convYr;
+  const metaRec = 0.0113 * metaVol;
   lines.push({concept:'Mensajes Meta (Utilidad)', unit:'0.0113/msj', yr0:0, recurring:metaRec, isVar:true});
 
   // Uso IA por msj (Thinkchat Sin IA)
